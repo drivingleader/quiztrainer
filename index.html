@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quiz Hacker - Speed Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow: hidden; /* Prevent scroll on mobile during play */
+            touch-action: manipulation;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #4ade80, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-enter {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .btn-press {
+            transition: transform 0.1s;
+        }
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+
+        /* Focus Mode Highlight */
+        .dimmed-text {
+            opacity: 0.3;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+        .highlight-text {
+            color: #ffffff;
+            font-size: 1.4rem;
+            font-weight: 900;
+            line-height: 1.3;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Solo/Boss Mode Styles */
+        .boss-mode {
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+        }
+        .boss-badge {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center justify-between p-4 max-w-md mx-auto">
+
+    <!-- Header Stats -->
+    <div class="w-full flex justify-between items-center mt-2 mb-4">
+        <div class="flex flex-col">
+            <span class="text-xs text-slate-400 uppercase tracking-widest">Combo</span>
+            <span id="combo-display" class="text-2xl font-black text-yellow-400">x0</span>
+        </div>
+        <div class="flex flex-col items-end">
+            <span class="text-xs text-slate-400 uppercase tracking-widest">Vite</span>
+            <div id="lives-display" class="flex space-x-1 text-red-500 text-xl">
+                <i class="fas fa-heart"></i><i class="fas fa-heart"></i><i class="fas fa-heart"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card Area -->
+    <div id="quiz-container" class="flex-1 w-full flex flex-col justify-center relative">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 rounded-3xl p-8 text-center z-50">
+            <h1 class="text-4xl font-black mb-2"><span class="gradient-text">QUIZ HACKER</span></h1>
+            <p class="text-slate-400 mb-8">Non leggere tutto. Trova il pattern.</p>
+            <div class="space-y-4 w-full">
+                <button onclick="startGame('mix')" class="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-lg shadow-lg shadow-blue-900/50 btn-press">
+                    🚀 Inizia Allenamento
+                </button>
+                <button onclick="startGame('solo')" class="w-full py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-lg border border-slate-600 btn-press text-red-400">
+                    ☠️ Solo "Le Difficili"
+                </button>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div id="card" class="bg-slate-800 w-full rounded-3xl p-6 shadow-2xl border-t border-slate-700 hidden flex flex-col items-center justify-center min-h-[300px]">
+            
+            <!-- Boss Badge -->
+            <div id="boss-badge" class="hidden boss-badge bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
+                <i class="fas fa-skull"></i> Domanda Killer
+            </div>
+
+            <!-- Image Container (Placeholder for actual images) -->
+            <div id="img-container" class="w-full h-32 bg-slate-900 rounded-xl mb-4 flex items-center justify-center text-slate-600 hidden">
+                <i class="fas fa-image text-3xl"></i>
+            </div>
+
+            <!-- The Text -->
+            <div id="question-text" class="text-center w-full">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback" class="absolute inset-0 hidden items-center justify-center z-40 rounded-3xl backdrop-blur-sm bg-black/50">
+            <div id="feedback-icon" class="text-8xl transform scale-0 transition-transform duration-200"></div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div id="controls" class="w-full mt-6 mb-4 grid grid-cols-2 gap-4 hidden">
+        <button onclick="answer(false)" class="py-6 bg-red-500/10 border-2 border-red-500 text-red-500 rounded-2xl font-black text-xl hover:bg-red-500 hover:text-white transition-colors btn-press flex flex-col items-center">
+            <i class="fas fa-times mb-1"></i> FALSO
+        </button>
+        <button onclick="answer(true)" class="py-6 bg-green-500/10 border-2 border-green-500 text-green-500 rounded-2xl font-black text-xl hover:bg-green-500 hover:text-white transition-colors btn-press flex flex-col items-center">
+            <i class="fas fa-check mb-1"></i> VERO
+        </button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over" class="hidden absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-8 text-center">
+        <h2 class="text-3xl font-bold text-white mb-2">GAME OVER</h2>
+        <p class="text-slate-400 mb-6">Punteggio finale: <span id="final-score" class="text-white font-bold">0</span></p>
+        <button onclick="resetGame()" class="px-8 py-3 bg-white text-slate-900 rounded-full font-bold btn-press">Riprova</button>
+    </div>
+
+    <script>
+        // --- DATASET (80/20 STRATEGY) ---
+        // Types: 'cluster' (visual highlighting) or 'solo' (full text focus)
+        const database = [
+            // CLUSTER A: Segnali (Focus su parola chiave)
+            { text: "Il segnale raffigurato indica la fine di un divieto di sosta", prefix: "Il segnale raffigurato indica", highlight: "la FINE di un DIVIETO", isTrue: false, type: "cluster", id: "sig_1" },
+            { text: "Il segnale raffigurato preannuncia un tratto di strada sdrucciolevole", prefix: "Il segnale raffigurato preannuncia", highlight: "strada SDRUCCIOLEVOLE", isTrue: true, type: "cluster", id: "sig_2" },
+            { text: "Il pannello integrativo raffigurato indica l'orario di validità del divieto", prefix: "Il pannello integrativo raffigurato indica", highlight: "ORARIO di validità", isTrue: true, type: "cluster", id: "sig_3" },
+            { text: "Il segnale raffigurato obbliga ad arrestarsi all'incrocio", prefix: "Il segnale raffigurato", highlight: "OBBLIGA ad ARRESTARSI", isTrue: false, type: "cluster", id: "sig_4" },
+            
+            // CLUSTER B: Comportamento (Focus su avverbi)
+            { text: "Il conducente deve sempre dare la precedenza ai veicoli che provengono da sinistra", prefix: "Il conducente deve", highlight: "SEMPRE dare precedenza a SINISTRA", isTrue: false, type: "cluster", id: "beh_1" },
+            { text: "È vietato sorpassare in prossimità o in corrispondenza delle curve su strade a due corsie a doppio senso", prefix: "È vietato sorpassare", highlight: "in CURVA a DOPPIO SENSO", isTrue: true, type: "cluster", id: "beh_2" },
+            { text: "Durante la marcia per file parallele è consentito cambiare corsia puramente per guadagnare tempo", prefix: "Durante la marcia per file parallele", highlight: "cambiare corsia per GUADAGNARE TEMPO", isTrue: false, type: "cluster", id: "beh_3" },
+
+            // SOLO: Le "Bastarde" (Tecniche / Uniche)
+            { text: "L'idoneità alla guida può essere compromessa se si fa uso di alcuni farmaci sedativi", prefix: "", highlight: "FARMACI SEDATIVI", isTrue: true, type: "solo", id: "solo_1" },
+            { text: "Il servosterzo aiuta a mantenere la traiettoria in caso di foratura di uno pneumatico", prefix: "", highlight: "SERVOSTERZO aiuta in caso di FORATURA", isTrue: true, type: "solo", id: "solo_2" },
+            { text: "La spia dell'olio dei freni è di colore verde", prefix: "", highlight: "Spia OLIO FRENI è VERDE", isTrue: false, type: "solo", id: "solo_3" },
+            { text: "In caso di emorragia esterna bisogna comprimere la ferita con materiale sterile", prefix: "In caso di", highlight: "EMORRAGIA comprimere con STERILE", isTrue: true, type: "solo", id: "solo_4" },
+            { text: "La responsabilità civile connessa al sinistro stradale è indipendente dalla responsabilità penale", prefix: "", highlight: "Responsabilità CIVILE indipendente da PENALE", isTrue: true, type: "solo", id: "solo_5" },
+            { text: "Il conducente che intende sorpassare deve accertarsi che il veicolo che lo precede non abbia segnalato la stessa manovra", prefix: "", highlight: "Sorpasso: veicolo che PRECEDE non abbia segnalato", isTrue: true, type: "solo", id: "solo_6" }
+        ];
+
+        // --- GAME STATE ---
+        let currentPool = [];
+        let currentQuestion = null;
+        let score = 0;
+        let lives = 3;
+        let combo = 0;
+
+        // --- CORE LOGIC ---
+
+        function startGame(mode) {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('card').classList.remove('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            
+            lives = 3;
+            combo = 0;
+            score = 0;
+            updateStats();
+
+            // Filter questions based on mode
+            if (mode === 'solo') {
+                currentPool = database.filter(q => q.type === 'solo');
+            } else {
+                currentPool = [...database]; // Copy all
+            }
+            
+            // Shuffle
+            currentPool.sort(() => Math.random() - 0.5);
+            nextCard();
+        }
+
+        function nextCard() {
+            if (currentPool.length === 0) {
+                // End of round / Refill
+                alert("Hai completato il set! Ricarico le domande.");
+                startGame('mix');
+                return;
+            }
+
+            currentQuestion = currentPool.pop();
+            renderCard(currentQuestion);
+        }
+
+        function renderCard(q) {
+            const card = document.getElementById('card');
+            const textContainer = document.getElementById('question-text');
+            const bossBadge = document.getElementById('boss-badge');
+            
+            // Reset Animation
+            card.classList.remove('card-enter', 'shake', 'boss-mode');
+            void card.offsetWidth; // Trigger reflow
+            card.classList.add('card-enter');
+
+            // Boss Mode Visuals
+            if (q.type === 'solo') {
+                card.classList.add('boss-mode');
+                bossBadge.classList.remove('hidden');
+            } else {
+                bossBadge.classList.add('hidden');
+            }
+
+            // HTML Generation based on Logic (Cluster vs Solo)
+            if (q.type === 'cluster' && q.prefix) {
+                // Focus Mode: Dim the prefix, explode the highlight
+                textContainer.innerHTML = `
+                    <div class="dimmed-text mb-2">${q.prefix}...</div>
+                    <div class="highlight-text">${q.highlight}</div>
+                `;
+            } else {
+                // Solo Mode: Show full text but bold the key concept
+                textContainer.innerHTML = `
+                    <div class="text-lg font-medium leading-snug">${q.text.replace(q.highlight, `<span class="text-yellow-400 font-bold">${q.highlight}</span>`)}</div>
+                `;
+            }
+        }
+
+        function answer(userChoice) {
+            const isCorrect = (userChoice === currentQuestion.isTrue);
+            
+            showFeedback(isCorrect);
+
+            if (isCorrect) {
+                combo++;
+                score += (10 + (combo * 2));
+                if(currentQuestion.type === 'solo') score += 20; // Bonus for boss
+            } else {
+                combo = 0;
+                lives--;
+                document.getElementById('card').classList.add('shake');
+            }
+
+            updateStats();
+
+            if (lives <= 0) {
+                setTimeout(gameOver, 500);
+            } else {
+                setTimeout(nextCard, 600); // Wait for feedback animation
+            }
+        }
+
+        function showFeedback(isCorrect) {
+            const overlay = document.getElementById('feedback');
+            const icon = document.getElementById('feedback-icon');
+            
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            if (isCorrect) {
+                icon.innerHTML = '🔥'; // Fire for correct
+                // Sound effect could go here
+            } else {
+                icon.innerHTML = '💩'; // Poop for wrong (Gen Z humor) or ❌
+            }
+            
+            // Pop animation
+            requestAnimationFrame(() => {
+                icon.classList.remove('scale-0');
+                icon.classList.add('scale-150');
+            });
+
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                icon.classList.remove('scale-150');
+                icon.classList.add('scale-0');
+            }, 500);
+        }
+
+        function updateStats() {
+            document.getElementById('combo-display').innerText = `x${combo}`;
+            document.getElementById('lives-display').innerHTML = '';
+            for(let i=0; i<3; i++) {
+                if(i < lives) {
+                    document.getElementById('lives-display').innerHTML += '<i class="fas fa-heart"></i>';
+                } else {
+                    document.getElementById('lives-display').innerHTML += '<i class="far fa-heart opacity-30"></i>';
+                }
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('game-over').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+        }
+
+        function resetGame() {
+            document.getElementById('game-over').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('card').classList.add('hidden');
+            document.getElementById('controls').classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
