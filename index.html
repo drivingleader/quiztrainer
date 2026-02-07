@@ -42,7 +42,7 @@
         
         @media (max-height: 700px) {
             .highlight-text { font-size: 1.1rem; }
-            #sign-visual-container { height: 100px !important; }
+            #sign-visual-container { height: 110px !important; }
             #card { padding: 1rem; }
         }
         @media (min-height: 701px) {
@@ -57,13 +57,19 @@
         
         /* Image Styling */
         .ministerial-img {
-            max-height: 100%;
+            height: 100%;
+            width: auto;
             max-width: 100%;
-            border-radius: 12px;
+            border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border: 2px solid #334155;
             object-fit: contain;
+            background-color: white; /* Per i segnali trasparenti */
         }
+
+        /* Fallback CSS Signs (Ultima spiaggia) */
+        .sign-fallback-circle { width: 80px; height: 80px; border-radius: 50%; border: 10px solid #dc2626; background: white; }
+        .sign-fallback-triangle { width: 0; height: 0; border-left: 50px solid transparent; border-right: 50px solid transparent; border-bottom: 85px solid white; position: relative; }
+        .sign-fallback-triangle::after { content: ''; position: absolute; top: 6px; left: -42px; border-left: 42px solid transparent; border-right: 42px solid transparent; border-bottom: 72px solid #dc2626; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-between p-4 max-w-md mx-auto h-full relative">
@@ -102,8 +108,8 @@
                     <span class="text-white font-bold">Ministeriale 2025</span>
                 </div>
                 <div class="flex justify-between text-xs text-slate-400 uppercase border-t border-slate-700 pt-2">
-                    <span>Metodo</span>
-                    <span class="text-green-400 font-bold">80/20 & Immagini Reali</span>
+                    <span>Immagini</span>
+                    <span class="text-green-400 font-bold">Multi-Source Load</span>
                 </div>
             </div>
 
@@ -122,13 +128,16 @@
                  <div id="boss-badge" class="hidden bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-widest shadow-red-900/50 shadow-lg inline-block">
                     <i class="fas fa-skull"></i> Difficile
                 </div>
-                <div id="fig-badge" class="bg-slate-700 text-slate-300 text-[9px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-widest border border-slate-600 inline-block">
+                <div id="fig-badge" class="bg-slate-700 text-slate-300 text-[9px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-widest border border-slate-600 inline-block opacity-0">
                     <!-- Figura ID injected here -->
                 </div>
             </div>
 
             <!-- Image Container -->
-            <div id="sign-visual-container" class="w-full flex justify-center items-center h-32 mb-4 bg-slate-900/50 rounded-xl p-2 border border-slate-700/50">
+            <div id="sign-visual-container" class="w-full flex justify-center items-center h-36 mb-4 bg-slate-900/30 rounded-xl p-2 border border-slate-700/30 relative overflow-hidden">
+                <div id="loader" class="absolute inset-0 flex items-center justify-center text-slate-600">
+                    <i class="fas fa-circle-notch fa-spin text-2xl"></i>
+                </div>
                 <!-- Image injected via JS -->
             </div>
 
@@ -158,11 +167,11 @@
 
     <!-- Controls (Bottom) -->
     <div id="controls" class="w-full mt-2 mb-safe grid grid-cols-2 gap-3 hidden h-[140px] shrink-0">
-        <button id="btn-false" onclick="handleAnswer(false)" class="h-full bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all flex flex-col items-center justify-center group touch-none select-none outline-none">
+        <button id="btn-false" onclick="handleAnswer(false)" class="h-full bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all flex flex-col items-center justify-center group touch-none select-none outline-none focus:outline-none">
             <i class="fas fa-times text-3xl mb-1 group-active:scale-90 transition-transform"></i>
             <span>FALSO</span>
         </button>
-        <button id="btn-true" onclick="handleAnswer(true)" class="h-full bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all flex flex-col items-center justify-center group touch-none select-none outline-none">
+        <button id="btn-true" onclick="handleAnswer(true)" class="h-full bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all flex flex-col items-center justify-center group touch-none select-none outline-none focus:outline-none">
             <i class="fas fa-check text-3xl mb-1 group-active:scale-90 transition-transform"></i>
             <span>VERO</span>
         </button>
@@ -188,20 +197,17 @@
 
     <script>
         // --- REAL DATABASE (With Official Figure IDs) ---
-        // Extracted from your PDF + Standard Signals for variety
+        // Cleaned up: Definitions have no figureId. Signals use standard IDs.
         const database = [
-            // --- VEICOLI (Figura 1) - Extracted from PDF ---
-            { "text": "I veicoli a due ruote, con motore termico fino a 50 cm3 di cilindrata e velocità massima di 45 km/h sono ciclomotori", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "MOTORE FINO A 50 cm3 = CICLOMOTORI", "id": "q_0" },
-            { "text": "I ciclomotori possono avere due o tre ruote", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "CICLOMOTORI possono avere 2 o 3 RUOTE", "id": "q_1" },
-            { "text": "I ciclomotori a due ruote non possono avere un motore termico di cilindrata superiore a 50 cm3", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "NON SUPERIORE A 50 cm3", "id": "q_3" },
-            { "text": "I ciclomotori sono soggetti a revisione dopo quattro anni dalla prima immatricolazione", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "REVISIONE dopo 4 ANNI", "id": "q_4" },
-            { "text": "I motocicli sono veicoli a due ruote di cilindrata superiore a 50 cm3", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "MOTOCICLI > 50 cm3", "id": "q_12" },
-            { "text": "I quadricicli leggeri sono equiparati ai ciclomotori", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "QUADRICICLI LEGGERI = CICLOMOTORI", "id": "q_32" },
-            { "text": "La potenza dei quadricicli non leggeri è sempre inferiore o uguale a 15 kW", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "POTENZA MAX 15 kW", "id": "q_33" },
-            { "text": "L'autovettura è un veicolo destinato al trasporto di massimo nove persone, compreso il conducente", "isTrue": true, "figureId": "1", "type": "solo", "prefix": "", "highlight": "MAX 9 PERSONE compreso conducente", "id": "q_43" },
-            
-            // --- SEGNALI DI PERICOLO (Figure Reali) ---
-            { "text": "Il segnale raffigurato preannuncia una strada deformata", "isTrue": true, "figureId": "1", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "STRADA DEFORMATA", "id": "sig_1" }, // Fig 1 is technically vehicles in text, but fig 1 in signs is deformata. Let's use specific IDs.
+            // --- VEICOLI (No Figure - Using Icons) ---
+            { "text": "I veicoli a due ruote, con motore termico fino a 50 cm3 e velocità max 45 km/h sono ciclomotori", "isTrue": true, "figureId": null, "icon": "motorcycle", "type": "solo", "prefix": "", "highlight": "MOTORE FINO A 50 cm3 = CICLOMOTORI", "id": "q_0" },
+            { "text": "I ciclomotori possono avere due o tre ruote", "isTrue": true, "figureId": null, "icon": "motorcycle", "type": "solo", "prefix": "", "highlight": "CICLOMOTORI possono avere 2 o 3 RUOTE", "id": "q_1" },
+            { "text": "I motocicli sono veicoli a due ruote di cilindrata superiore a 50 cm3", "isTrue": true, "figureId": null, "icon": "motorcycle", "type": "solo", "prefix": "", "highlight": "MOTOCICLI > 50 cm3", "id": "q_12" },
+            { "text": "L'autovettura è un veicolo destinato al trasporto di massimo nove persone, compreso il conducente", "isTrue": true, "figureId": null, "icon": "car", "type": "solo", "prefix": "", "highlight": "MAX 9 PERSONE compreso conducente", "id": "q_43" },
+            { "text": "Il casco non è obbligatorio per i conducenti maggiorenni di ciclomotori", "isTrue": false, "figureId": null, "icon": "helmet-safety", "type": "solo", "prefix": "", "highlight": "CASCO NON OBBLIGATORIO MAGGIORENNI", "id": "solo_7" },
+
+            // --- SEGNALI DI PERICOLO (IDs Standard) ---
+            { "text": "Il segnale raffigurato preannuncia una strada deformata", "isTrue": true, "figureId": "1", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "STRADA DEFORMATA", "id": "sig_1" },
             { "text": "Il segnale raffigurato preannuncia un dosso", "isTrue": true, "figureId": "2", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "un DOSSO", "id": "sig_2" },
             { "text": "Il segnale raffigurato preannuncia una curva pericolosa a destra", "isTrue": true, "figureId": "3", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "CURVA A DESTRA", "id": "sig_3" },
             { "text": "Il segnale raffigurato preannuncia una curva pericolosa a sinistra", "isTrue": true, "figureId": "4", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "CURVA A SINISTRA", "id": "sig_4" },
@@ -209,31 +215,29 @@
             { "text": "Il segnale raffigurato preannuncia materiale instabile sulla strada", "isTrue": true, "figureId": "22", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "MATERIALE INSTABILE", "id": "sig_22" },
             { "text": "Il segnale raffigurato preannuncia la presenza di bambini", "isTrue": true, "figureId": "24", "type": "cluster", "prefix": "Il segnale raffigurato preannuncia", "highlight": "presenza di BAMBINI", "id": "sig_24" },
             
-            // --- SEGNALI DI PRECEDENZA (Figure Reali) ---
+            // --- SEGNALI DI PRECEDENZA ---
             { "text": "Il segnale raffigurato obbliga a dare la precedenza", "isTrue": true, "figureId": "36", "type": "cluster", "prefix": "Il segnale raffigurato", "highlight": "DARE PRECEDENZA", "id": "sig_36" },
             { "text": "Il segnale raffigurato obbliga a fermarsi e dare la precedenza (STOP)", "isTrue": true, "figureId": "37", "type": "cluster", "prefix": "Il segnale raffigurato obbliga", "highlight": "FERMARSI E DARE PRECEDENZA", "id": "sig_37" },
             { "text": "Il segnale raffigurato indica l'intersezione con precedenza a destra", "isTrue": true, "figureId": "40", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "PRECEDENZA A DESTRA", "id": "sig_40" },
             { "text": "Il segnale raffigurato indica il diritto di precedenza", "isTrue": true, "figureId": "43", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "DIRITTO DI PRECEDENZA", "id": "sig_43" },
             
-            // --- SEGNALI DI DIVIETO (Figure Reali) ---
+            // --- SEGNALI DI DIVIETO ---
             { "text": "Il segnale raffigurato vieta il transito a tutti i veicoli", "isTrue": true, "figureId": "46", "type": "cluster", "prefix": "Il segnale raffigurato vieta", "highlight": "DIVIETO DI TRANSITO", "id": "sig_46" },
             { "text": "Il segnale raffigurato vieta il sorpasso", "isTrue": true, "figureId": "54", "type": "cluster", "prefix": "Il segnale raffigurato vieta", "highlight": "DIVIETO DI SORPASSO", "id": "sig_54" },
             { "text": "Il segnale raffigurato indica il limite massimo di velocità 50 km/h", "isTrue": true, "figureId": "61", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "LIMITE MAX 50 km/h", "id": "sig_61" },
             { "text": "Il segnale raffigurato vieta la sosta", "isTrue": true, "figureId": "76", "type": "cluster", "prefix": "Il segnale raffigurato vieta", "highlight": "DIVIETO DI SOSTA", "id": "sig_76" },
             { "text": "Il segnale raffigurato indica un passo carrabile", "isTrue": true, "figureId": "78", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "PASSO CARRABILE", "id": "sig_78" },
 
-            // --- SEGNALI DI OBBLIGO (Figure Reali) ---
+            // --- SEGNALI DI OBBLIGO ---
             { "text": "Il segnale raffigurato indica direzione obbligatoria a destra", "isTrue": true, "figureId": "80", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "DIREZIONE OBBLIGATORIA DESTRA", "id": "sig_80" },
             { "text": "Il segnale raffigurato indica una rotatoria", "isTrue": true, "figureId": "84", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "ROTATORIA", "id": "sig_84" },
             { "text": "Il segnale raffigurato indica un percorso pedonale", "isTrue": true, "figureId": "88", "type": "cluster", "prefix": "Il segnale raffigurato indica", "highlight": "PERCORSO PEDONALE", "id": "sig_88" },
             
-            // --- TRAPPOLE E FALSI (Misti) ---
+            // --- TRAPPOLE E FALSI ---
             { "text": "Il segnale raffigurato (STOP) permette di passare se non c'è nessuno", "isTrue": false, "figureId": "37", "type": "cluster", "prefix": "Il segnale raffigurato", "highlight": "passare se non c'è nessuno", "id": "tr_1" },
             { "text": "Il segnale raffigurato (Divieto Sosta) vieta la fermata", "isTrue": false, "figureId": "76", "type": "cluster", "prefix": "Il segnale raffigurato", "highlight": "VIETA LA FERMATA", "id": "tr_2" },
             { "text": "Il segnale raffigurato (Bambini) indica una scuola", "isTrue": false, "figureId": "24", "type": "cluster", "prefix": "Il segnale raffigurato", "highlight": "indica una SCUOLA", "id": "tr_3" },
             { "text": "Il segnale raffigurato (Passo Carrabile) consente la sosta breve", "isTrue": false, "figureId": "78", "type": "cluster", "prefix": "Il segnale raffigurato", "highlight": "consente SOSTA BREVE", "id": "tr_4" },
-            { "text": "I quadricicli non leggeri possono circolare in autostrada", "isTrue": false, "figureId": "1", "type": "solo", "prefix": "", "highlight": "QUADRICICLI in AUTOSTRADA", "id": "tr_5" },
-            { "text": "Il limite di velocità per i ciclomotori è 50 km/h", "isTrue": false, "figureId": "1", "type": "solo", "prefix": "", "highlight": "CICLOMOTORI 50 km/h", "id": "tr_6" }
         ];
 
         // --- GAME STATE ---
@@ -276,7 +280,6 @@
             currentQuestion = currentPool.pop();
             renderCard(currentQuestion);
             
-            // CRITICAL FIX: Blur active elements to remove sticky hover state on mobile
             if (document.activeElement) {
                 document.activeElement.blur();
             }
@@ -290,31 +293,58 @@
             const progressBar = document.getElementById('progress-bar');
             const progressText = document.getElementById('progress-text');
             const signContainer = document.getElementById('sign-visual-container');
+            const loader = document.getElementById('loader');
             
             // Animation Reset
             card.classList.remove('card-enter', 'shake', 'boss-mode');
             void card.offsetWidth; 
             card.classList.add('card-enter');
 
-            // Logic: Is it a difficult question?
+            // Difficulty UI
             if (q.type === 'solo' || !q.isTrue) {
                 if(Math.random() > 0.5) card.classList.add('boss-mode');
             }
 
-            // Badge Display
-            figBadge.innerText = `FIGURA ${q.figureId}`;
+            // Figure Badge
+            if(q.figureId) {
+                figBadge.innerText = `FIGURA ${q.figureId}`;
+                figBadge.classList.remove('opacity-0');
+            } else {
+                figBadge.classList.add('opacity-0');
+            }
             bossBadge.classList.toggle('hidden', q.type !== 'solo');
 
-            // IMAGE GENERATION (REAL URL)
-            // Using a reliable public repository pattern for ministerial quiz images
-            // Pattern: https://www.quizpatente.it/images/patente_b/figure/[ID].png
-            // Fallback included in onerror
-            signContainer.innerHTML = `
-                <img src="https://www.quizpatente.it/images/patente_b/figure/${q.figureId}.png" 
-                     class="ministerial-img" 
-                     alt="Figura ${q.figureId}"
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x150?text=FIGURA+${q.figureId}';">
-            `;
+            // --- IMAGE LOADING SYSTEM ---
+            loader.classList.remove('hidden');
+            
+            if (q.figureId) {
+                // Try primary source, fallback to secondary
+                // Use a standard ID string (no padding usually for these sources)
+                const id = q.figureId;
+                const primaryUrl = `https://www.rmastri.it/new_quiz/img/fig${id}.jpg`;
+                const backupUrl = `https://www.patentati.it/img/quiz/b/figure/${id}.png`;
+                
+                signContainer.innerHTML = `
+                    <div id="loader" class="absolute inset-0 flex items-center justify-center text-slate-600">
+                        <i class="fas fa-circle-notch fa-spin text-2xl"></i>
+                    </div>
+                    <img id="quiz-img" 
+                         src="${primaryUrl}" 
+                         class="ministerial-img hidden" 
+                         alt="Figura ${id}"
+                         onload="this.classList.remove('hidden'); document.getElementById('loader').classList.add('hidden');"
+                         onerror="tryBackupImage(this, '${backupUrl}', '${id}')">
+                `;
+            } else {
+                // No Figure - Use Icon
+                loader.classList.add('hidden');
+                const iconClass = q.icon ? `fa-${q.icon}` : 'fa-traffic-light';
+                signContainer.innerHTML = `
+                    <div class="w-24 h-24 rounded-full bg-slate-700/50 flex items-center justify-center text-5xl text-blue-400 border-4 border-slate-600">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+                `;
+            }
 
             // Text Logic (80/20)
             if (q.type === 'cluster' && q.prefix) {
@@ -328,14 +358,30 @@
                 `;
             }
             
-            // Progress Bar
             let progress = (count % 10) * 10; 
             progressBar.style.width = `${progress}%`;
             progressText.innerText = Math.floor(count / 10) + 1;
         }
 
+        // --- ROBUST IMAGE FALLBACK SYSTEM ---
+        function tryBackupImage(imgElement, backupUrl, id) {
+            console.log("Primary image failed. Trying backup...");
+            imgElement.onerror = function() {
+                // If backup fails, show CSS fallback or placeholder
+                console.log("Backup image failed.");
+                document.getElementById('loader').classList.add('hidden');
+                imgElement.parentElement.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-slate-500 h-full w-full bg-slate-800 rounded-lg border border-slate-700">
+                        <i class="fas fa-image-slash text-2xl mb-1"></i>
+                        <span class="text-[10px] uppercase font-bold">Img non disponibile</span>
+                        <span class="text-[9px]">Fig. ${id}</span>
+                    </div>
+                `;
+            };
+            imgElement.src = backupUrl;
+        }
+
         function handleAnswer(userChoice) {
-            // FIX: Immediately remove focus from button
             const btn = userChoice ? document.getElementById('btn-true') : document.getElementById('btn-false');
             btn.blur();
 
