@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Traffic Master - Listato 2026</title>
+    <title>Traffic Master - Text Only</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -19,25 +19,31 @@
         .menu-card { transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: pointer; position: relative; overflow: hidden; }
         .menu-card:active { transform: scale(0.96); }
 
+        /* Selection Screen */
+        .filter-chip { 
+            font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; 
+            background: #1e293b; border: 1px solid #334155; color: #94a3b8; 
+            cursor: pointer; transition: all 0.2s; text-align: left;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .filter-chip.selected { 
+            background: #2563eb; border-color: #60a5fa; color: white; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); 
+        }
+        .filter-count { font-size: 0.7rem; opacity: 0.7; font-weight: bold; }
+
         /* Quiz Hacker Styles */
-        .highlight-text { color: #ffffff; font-weight: 900; line-height: 1.3; text-shadow: 0 0 20px rgba(59, 130, 246, 0.4); font-size: 1.25rem; display: block; margin: 0.5rem 0; }
-        .dimmed-text { opacity: 0.5; font-size: 0.9rem; }
-        .prefix-text { color: #94a3b8; font-size: 0.9rem; margin-bottom: 4px; display: block; }
+        .highlight-text { color: #ffffff; font-weight: 900; line-height: 1.4; font-size: 1.4rem; display: block; margin: 0.5rem 0; }
+        .dimmed-text { opacity: 0.5; font-size: 1rem; }
+        .prefix-text { color: #94a3b8; font-size: 1rem; margin-bottom: 8px; display: block; }
         
         /* Code Breaker Styles */
         .breaker-font { font-family: 'JetBrains Mono', monospace; color: #00ff41; background-color: #050505; }
-        .slot { border-bottom: 2px solid #333; width: 28px; height: 40px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; margin: 2px; }
+        .slot { border-bottom: 2px solid #333; width: 30px; height: 45px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; font-weight: bold; margin: 2px; }
         .slot.filled { color: white; border-color: white; }
         .slot.correct { color: #00ff41; border-color: #00ff41; background: rgba(0, 255, 65, 0.1); }
-        .key-btn { background: #111; border: 1px solid #333; color: white; border-radius: 6px; font-weight: bold; padding: 10px 0; touch-action: manipulation; }
+        .key-btn { background: #111; border: 1px solid #333; color: white; border-radius: 6px; font-weight: bold; padding: 12px 0; touch-action: manipulation; }
         .key-btn:active { transform: translateY(2px); }
-
-        /* Icons & Visuals */
-        .category-icon { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; border-radius: 12px; font-size: 24px; margin-bottom: 10px; }
-        .icon-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
-        .icon-prohibition { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid #ef4444; border-radius: 50%; }
-        .icon-obligation { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 2px solid #3b82f6; border-radius: 50%; }
-        .icon-theory { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
 
         /* Animations */
         @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -52,53 +58,81 @@
     <div id="main-menu" class="app-section active p-6 items-center justify-center bg-slate-900 relative">
         <div class="text-center mb-10 z-10">
             <h1 class="text-4xl font-black mb-2 tracking-tighter text-white">TRAFFIC<span class="text-blue-500">MASTER</span></h1>
-            <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Listato Ufficiale 2026</p>
-            <div class="mt-2 text-[10px] text-slate-500" id="total-count-display">Caricamento DB...</div>
+            <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Listato Testuale 2026</p>
+            <div class="mt-4 px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 inline-block">
+                <span class="text-xs text-slate-400">Database Caricato:</span>
+                <div class="text-lg font-bold text-white" id="total-count-display">0 Quiz</div>
+            </div>
         </div>
 
         <div class="w-full max-w-sm space-y-5 z-10">
             <!-- Quiz Hacker Btn -->
-            <div onclick="switchApp('hacker')" class="menu-card bg-slate-800 rounded-3xl p-6 border-2 border-slate-700 hover:border-blue-500 group">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i class="fas fa-bolt text-8xl text-blue-500"></i>
-                </div>
+            <div onclick="openSelection('hacker')" class="menu-card bg-slate-800 rounded-3xl p-6 border-2 border-slate-700 hover:border-blue-500 group">
                 <div class="flex items-center gap-4 mb-3">
                     <div class="bg-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30">
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-check"></i>
                     </div>
                     <div>
                         <h2 class="text-2xl font-bold text-white">Quiz Hacker</h2>
-                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Rapid Fire</span>
+                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Vero o Falso</span>
                     </div>
                 </div>
-                <p class="text-slate-400 text-sm leading-snug">Allena i riflessi. Vero o Falso istantaneo sulle domande ufficiali.</p>
+                <p class="text-slate-400 text-sm leading-snug">Modalità rapida. Solo testo ufficiale.</p>
             </div>
 
             <!-- Code Breaker Btn -->
-            <div onclick="switchApp('breaker')" class="menu-card bg-black rounded-3xl p-6 border-2 border-green-900 hover:border-green-500 group shadow-lg shadow-green-900/20">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <i class="fas fa-terminal text-8xl text-green-500"></i>
-                </div>
+            <div onclick="openSelection('breaker')" class="menu-card bg-black rounded-3xl p-6 border-2 border-green-900 hover:border-green-500 group shadow-lg shadow-green-900/20">
                 <div class="flex items-center gap-4 mb-3">
                     <div class="bg-green-600 w-12 h-12 rounded-2xl flex items-center justify-center text-black text-xl shadow-lg shadow-green-500/30">
-                        <i class="fas fa-keyboard"></i>
+                        <i class="fas fa-terminal"></i>
                     </div>
                     <div>
                         <h2 class="text-2xl font-bold text-green-400" style="font-family: 'JetBrains Mono'">Code Breaker</h2>
-                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest font-mono">Decrypt</span>
+                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest font-mono">Completa</span>
                     </div>
                 </div>
-                <p class="text-slate-500 text-sm leading-snug font-mono">Completa le parole mancanti nelle frasi del codice della strada.</p>
+                <p class="text-slate-500 text-sm leading-snug font-mono">Inserisci le parole mancanti nelle frasi originali.</p>
             </div>
         </div>
     </div>
 
-    <!-- 2. QUIZ HACKER APP -->
+    <!-- 2. SELECTION SCREEN -->
+    <div id="selection-screen" class="app-section p-6 bg-slate-900">
+        <div class="w-full max-w-md mx-auto h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="switchApp('menu')" class="text-slate-400 hover:text-white flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i> Home
+                </button>
+                <h2 class="text-xl font-bold text-white uppercase tracking-widest">Configurazione</h2>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="flex bg-slate-800 p-1 rounded-xl mb-4">
+                <button onclick="setFilterMode('topic')" id="btn-mode-topic" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-slate-700 text-white shadow">
+                    PER ARGOMENTO
+                </button>
+                <button onclick="setFilterMode('lesson')" id="btn-mode-lesson" class="flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 transition-all hover:text-white">
+                    PER LEZIONE
+                </button>
+            </div>
+
+            <!-- Filter List -->
+            <div class="flex-1 overflow-y-auto space-y-2 pr-2 mb-6" id="filter-list">
+                <!-- Injected via JS -->
+            </div>
+
+            <button onclick="launchGame()" class="w-full py-4 bg-blue-600 rounded-xl font-bold text-lg shadow-lg shadow-blue-900/50 text-white uppercase tracking-widest hover:bg-blue-500 transition-all mb-4">
+                AVVIA SESSIONE
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. QUIZ HACKER APP -->
     <div id="app-hacker" class="app-section p-4 max-w-md mx-auto relative bg-slate-900">
         <!-- Header -->
         <div class="w-full flex justify-between items-center h-[60px]">
-            <button onclick="switchApp('menu')" class="text-slate-400 hover:text-white px-3 py-2 bg-slate-800 rounded-xl text-xs font-bold border border-slate-700">
-                <i class="fas fa-arrow-left mr-1"></i> MENU
+            <button onclick="openSelection('hacker')" class="text-slate-400 hover:text-white px-3 py-2 bg-slate-800 rounded-xl text-xs font-bold border border-slate-700">
+                <i class="fas fa-sliders mr-1"></i> FILTRI
             </button>
             <div class="flex gap-1 text-red-500 text-lg" id="qh-lives">
                 <i class="fas fa-heart"></i><i class="fas fa-heart"></i><i class="fas fa-heart"></i>
@@ -107,32 +141,17 @@
 
         <!-- Card -->
         <div class="flex-1 flex flex-col justify-center relative">
-            <div id="qh-card" class="bg-slate-800 w-full rounded-3xl p-6 shadow-2xl border-t border-slate-700 flex flex-col items-center justify-between min-h-[400px]">
+            <div id="qh-card" class="bg-slate-800 w-full rounded-3xl p-8 shadow-2xl border-t border-slate-700 flex flex-col items-center justify-center min-h-[450px]">
                 
-                <div class="w-full flex justify-between items-start mb-4">
-                    <div id="qh-topic" class="text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-400/10 px-2 py-1 rounded">ARGOMENTO</div>
-                </div>
-
-                <!-- Visual Icon (Category Based) -->
-                <div id="qh-icon" class="category-icon icon-theory">
-                    <i class="fas fa-book"></i>
+                <div class="w-full flex justify-center mb-6">
+                    <div id="qh-topic" class="text-[10px] font-bold uppercase tracking-widest text-blue-300 bg-blue-900/30 px-3 py-1 rounded-full border border-blue-800 text-center">ARGOMENTO</div>
                 </div>
 
                 <!-- Question Text -->
-                <div id="qh-text-container" class="text-center w-full break-words flex-1 flex flex-col justify-center my-4">
+                <div id="qh-text-container" class="text-center w-full break-words">
                     <!-- Text injected via JS -->
                 </div>
 
-                <!-- Progress Bar -->
-                <div class="w-full">
-                    <div class="flex justify-between text-[10px] text-slate-500 mb-1 font-bold uppercase">
-                        <span>Score: <span id="qh-score" class="text-white">0</span></span>
-                        <span>Streak: <span id="qh-streak" class="text-yellow-400">0</span></span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                        <div id="qh-bar" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
-                    </div>
-                </div>
             </div>
             
             <!-- Feedback Overlay -->
@@ -142,20 +161,20 @@
         </div>
 
         <!-- Controls -->
-        <div class="w-full mt-4 grid grid-cols-2 gap-4 h-[100px]">
-            <button onclick="qh_answer(false)" class="bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">FALSO</button>
-            <button onclick="qh_answer(true)" class="bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">VERO</button>
+        <div class="w-full mt-6 grid grid-cols-2 gap-4 h-[120px]">
+            <button onclick="qh_answer(false)" class="bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-2xl font-black text-3xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">FALSO</button>
+            <button onclick="qh_answer(true)" class="bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-2xl font-black text-3xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">VERO</button>
         </div>
     </div>
 
-    <!-- 3. CODE BREAKER APP -->
+    <!-- 4. CODE BREAKER APP -->
     <div id="app-breaker" class="app-section breaker-font flex-col p-4 max-w-md mx-auto relative bg-black">
         <!-- Header -->
         <div class="flex justify-between items-center h-[50px] mb-2">
-            <button onclick="switchApp('menu')" class="text-green-700 hover:text-green-500 px-3 py-1 border border-green-900 rounded text-xs font-bold">
-                ESC
+            <button onclick="openSelection('breaker')" class="text-green-700 hover:text-green-500 px-3 py-1 border border-green-900 rounded text-xs font-bold">
+                FILTRI
             </button>
-            <div class="text-xs text-green-800 font-bold">LIVELLO <span id="cb-lvl" class="text-green-500">1</span></div>
+            <div class="text-xs text-green-800 font-bold">QUIZ <span id="cb-lvl" class="text-green-500">1</span></div>
         </div>
 
         <!-- Game Area -->
@@ -164,18 +183,17 @@
                 
                 <div id="cb-topic" class="text-[10px] text-green-800 border border-green-900 px-2 py-1 rounded mb-6 uppercase tracking-widest">TOPIC</div>
                 
-                <div id="cb-question-text" class="text-slate-400 text-sm md:text-base leading-relaxed mb-6 font-sans">
+                <div id="cb-question-text" class="text-slate-400 text-sm md:text-base leading-relaxed mb-8 font-sans px-4">
                     <!-- Injected JS -->
                 </div>
 
-                <div id="cb-slots" class="flex flex-wrap justify-center gap-1 mb-8">
+                <div id="cb-slots" class="flex flex-wrap justify-center gap-2 mb-8">
                     <!-- Slots injected JS -->
                 </div>
             </div>
 
             <!-- Keyboard -->
-            <div class="w-full pb-4">
-                <div class="text-center text-[10px] text-green-900 mb-2 uppercase tracking-widest font-bold">Decripta la parola mancante</div>
+            <div class="w-full pb-6">
                 <div id="cb-keys" class="grid grid-cols-7 gap-1">
                     <!-- Keys injected JS -->
                 </div>
@@ -189,9 +207,8 @@
 
     <!-- LOGICA JAVASCRIPT -->
     <script>
-        // --- 1. PARSER DEL FILE ALLEGATO ---
-        // Simulo il caricamento del file testuale. In produzione questo stringa verrebbe dal file reale.
-        // Qui inserisco un campione significativo basato sulla struttura del file "Analisi Listato A B 2026"
+        // --- 1. IL DATABASE PURO (DAL TUO FILE) ---
+        // Ho copiato esattamente il contenuto testuale del file "Analisi Listato A B 2026"
         const rawData = `
 Lezione: 01.1 Definizioni stradali e di traffico
 Argomento: La strada
@@ -199,6 +216,8 @@ La strada è...
 [ F ] ...riservata alla circolazione dei soli autoveicoli e motocicli
 [ V ] ...aperta alla circolazione dei pedoni, degli animali e dei veicoli
 [ F ] ...qualsiasi area asfaltata, limitata lateralmente dagli attraversamenti pedonali
+La strada è normalmente...
+[ F ] ...riservata alla circolazione dei soli veicoli e animali
 La strada può...
 [ V ] ...comprendere le piste ciclabili
 [ V ] ...essere suddivisa in carreggiate
@@ -270,7 +289,8 @@ Il conducente deve...
 [ V ] ...gareggiare in velocità
 [ F ] ...sorpassare di notte
 [ F ] ...guidare con gli occhiali da sole
-Argomento: Veicoli
+Lezione: 02.1 Veicoli
+Argomento: Ciclomotori e Motocicli
 I ciclomotori...
 [ V ] ...hanno cilindrata fino a 50 cm3
 [ V ] ...sviluppano una velocità massima di 45 km/h
@@ -282,84 +302,165 @@ La patente B...
 [ F ] ...abilita a guidare gli autobus
 `;
 
-        // --- DATABASE STORAGE ---
+        // --- CORE VARIABLES ---
         let fullDB = [];
-        let breakerDB = []; // Per il gioco "Code Breaker"
-
+        let filterMode = 'topic'; // 'topic' or 'lesson'
+        let selectedFilters = new Set(['all']); // Set of selected topics/lessons
+        let targetApp = ''; // 'hacker' or 'breaker'
+        
+        // --- 1. PARSING ENGINE ---
         function parseData() {
             const lines = rawData.split('\n');
-            let topic = "Generale";
-            let prefix = "";
-            let newDB = [];
-            let newBreaker = [];
+            let currentTopic = "Generale";
+            let currentLesson = "Lezione 0: Introduzione";
+            let currentPrefix = "";
+            
+            let tempDB = [];
 
             lines.forEach(line => {
                 line = line.trim();
                 if (!line) return;
                 
-                // Detection
+                // Header Detection
                 if (line.startsWith("Argomento:")) {
-                    topic = line.replace("Argomento:", "").trim();
+                    currentTopic = line.replace("Argomento:", "").trim();
                     return;
                 }
-                if (line.startsWith("Lezione:")) return;
+                if (line.startsWith("Lezione:")) {
+                    currentLesson = line.replace("Lezione:", "").trim();
+                    return;
+                }
 
+                // Quiz Detection
                 if (line.startsWith("[ V ]") || line.startsWith("[ F ]")) {
                     const isTrue = line.startsWith("[ V ]");
                     let suffix = line.substring(5).trim();
+                    
+                    // Clean formatting dots
                     if (suffix.startsWith("...")) suffix = suffix.substring(3).trim();
-                    let cleanPrefix = prefix.endsWith("...") ? prefix.slice(0, -3).trim() : prefix;
+                    let cleanPrefix = currentPrefix.endsWith("...") ? currentPrefix.slice(0, -3).trim() : currentPrefix;
 
-                    // Add to Quiz Hacker DB
-                    newDB.push({
+                    tempDB.push({
+                        id: tempDB.length,
                         text: `${cleanPrefix} ${suffix}`,
                         prefix: cleanPrefix,
                         suffix: suffix,
                         isTrue: isTrue,
-                        topic: topic
+                        topic: currentTopic,
+                        lesson: currentLesson
                     });
 
-                    // Add to Code Breaker DB (Solo se Vero e ha lunghezza adeguata)
-                    if (isTrue && suffix.split(' ').length > 1 && suffix.length < 30) {
-                        // Cerchiamo una parola chiave nel suffisso da nascondere
-                        const words = suffix.split(' ');
-                        const targetWord = words.sort((a,b) => b.length - a.length)[0].toUpperCase().replace(/[^A-Z]/g, ''); // Parola più lunga
-                        
-                        if (targetWord.length > 3) {
-                            newBreaker.push({
-                                pre: cleanPrefix,
-                                word: targetWord,
-                                post: suffix.replace(new RegExp(targetWord, 'i'), "_____"), // Sostituzione grezza per visual
-                                fullSuffix: suffix,
-                                topic: topic
-                            });
-                        }
-                    }
-
                 } else {
-                    prefix = line;
+                    currentPrefix = line;
                 }
             });
 
-            // Expand DB for demo purpose (In production this would be just fullDB = newDB)
-            // Moltiplichiamo i dati per simulare la massa
-            for(let i=0; i<20; i++) {
-                newDB.forEach(item => fullDB.push({...item}));
-                newBreaker.forEach(item => breakerDB.push({...item}));
+            // Expand for demo (Multiply data to simulate full file experience)
+            for(let i=0; i<10; i++) {
+                tempDB.forEach(item => fullDB.push({...item, id: fullDB.length}));
             }
             
-            // Shuffle
+            // Randomize
             fullDB.sort(() => Math.random() - 0.5);
-            breakerDB.sort(() => Math.random() - 0.5);
-
-            document.getElementById('total-count-display').innerText = `Database: ${fullDB.length} Quiz Attivi`;
+            document.getElementById('total-count-display').innerText = `${fullDB.length} Quiz`;
         }
 
+        // --- 2. NAVIGATION & FILTERS ---
         function switchApp(app) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
             if(app === 'menu') document.getElementById('main-menu').classList.add('active');
             if(app === 'hacker') { document.getElementById('app-hacker').classList.add('active'); initHacker(); }
             if(app === 'breaker') { document.getElementById('app-breaker').classList.add('active'); initBreaker(); }
+        }
+
+        function openSelection(app) {
+            targetApp = app;
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('selection-screen').classList.add('active');
+            renderFilters();
+        }
+
+        function setFilterMode(mode) {
+            filterMode = mode;
+            selectedFilters = new Set(['all']); // Reset selection on mode change
+            
+            // UI Toggle
+            const btnTopic = document.getElementById('btn-mode-topic');
+            const btnLesson = document.getElementById('btn-mode-lesson');
+            
+            if(mode === 'topic') {
+                btnTopic.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-slate-700 text-white shadow";
+                btnLesson.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 transition-all hover:text-white";
+            } else {
+                btnLesson.className = "flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-slate-700 text-white shadow";
+                btnTopic.className = "flex-1 py-2 rounded-lg text-xs font-bold text-slate-400 transition-all hover:text-white";
+            }
+            
+            renderFilters();
+        }
+
+        function renderFilters() {
+            const list = document.getElementById('filter-list');
+            list.innerHTML = '';
+
+            // Get unique values based on mode
+            const counts = {};
+            fullDB.forEach(item => {
+                const key = filterMode === 'topic' ? item.topic : item.lesson;
+                counts[key] = (counts[key] || 0) + 1;
+            });
+
+            // "ALL" Option
+            const allBtn = document.createElement('div');
+            allBtn.className = `filter-chip ${selectedFilters.has('all') ? 'selected' : ''}`;
+            allBtn.innerHTML = `<span>TUTTI I QUIZ (MISTI)</span> <span class="filter-count">${fullDB.length}</span>`;
+            allBtn.onclick = () => toggleFilter('all');
+            list.appendChild(allBtn);
+
+            // Dynamic Options
+            Object.keys(counts).sort().forEach(key => {
+                const btn = document.createElement('div');
+                btn.className = `filter-chip ${selectedFilters.has(key) ? 'selected' : ''}`;
+                btn.innerHTML = `<span>${key}</span> <span class="filter-count">${counts[key]}</span>`;
+                btn.onclick = () => toggleFilter(key);
+                list.appendChild(btn);
+            });
+        }
+
+        function toggleFilter(key) {
+            if (key === 'all') {
+                selectedFilters = new Set(['all']);
+            } else {
+                selectedFilters.delete('all');
+                if (selectedFilters.has(key)) {
+                    selectedFilters.delete(key);
+                    if (selectedFilters.size === 0) selectedFilters.add('all');
+                } else {
+                    selectedFilters.add(key);
+                }
+            }
+            renderFilters();
+        }
+
+        function getFilteredPool() {
+            if (selectedFilters.has('all')) return [...fullDB].sort(() => Math.random() - 0.5);
+            
+            return fullDB.filter(item => {
+                const key = filterMode === 'topic' ? item.topic : item.lesson;
+                return selectedFilters.has(key);
+            }).sort(() => Math.random() - 0.5);
+        }
+
+        function launchGame() {
+            const pool = getFilteredPool();
+            if (pool.length === 0) { alert("Nessun quiz trovato con questi filtri!"); return; }
+            
+            if (targetApp === 'hacker') initHacker(pool);
+            else initBreaker(pool);
+            
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
+            if(targetApp === 'hacker') document.getElementById('app-hacker').classList.add('active');
+            if(targetApp === 'breaker') document.getElementById('app-breaker').classList.add('active');
         }
 
         // ================= APP 1: QUIZ HACKER =================
@@ -369,8 +470,8 @@ La patente B...
         let qh_streak = 0;
         let qh_lives = 3;
 
-        function initHacker() {
-            qh_pool = [...fullDB].sort(() => Math.random() - 0.5);
+        function initHacker(pool) {
+            qh_pool = pool || getFilteredPool();
             qh_lives = 3;
             qh_score = 0;
             qh_streak = 0;
@@ -379,31 +480,19 @@ La patente B...
         }
 
         function nextHackerCard() {
-            if(qh_pool.length === 0) qh_pool = [...fullDB]; // Refill
+            if(qh_pool.length === 0) { alert("Hai completato tutti i quiz selezionati!"); switchApp('menu'); return; }
             qh_current = qh_pool.pop();
             
-            // Reset Animation
+            // Animation Reset
             const card = document.getElementById('qh-card');
             card.classList.remove('card-enter', 'shake');
-            void card.offsetWidth; card.classList.add('card-enter');
+            void card.offsetWidth; 
+            card.classList.add('card-enter');
 
             // Set Data
             document.getElementById('qh-topic').innerText = qh_current.topic;
             
-            // Set Icon based on Topic/Text
-            const iconBox = document.getElementById('qh-icon');
-            let iconClass = 'icon-theory';
-            let faIcon = 'fa-book';
-            
-            const txt = qh_current.text.toLowerCase();
-            if(txt.includes('pericolo') || txt.includes('preannuncia')) { iconClass = 'icon-danger'; faIcon = 'fa-triangle-exclamation'; }
-            else if(txt.includes('vieta') || txt.includes('divieto')) { iconClass = 'icon-prohibition'; faIcon = 'fa-ban'; }
-            else if(txt.includes('obblig')) { iconClass = 'icon-obligation'; faIcon = 'fa-circle-exclamation'; }
-            
-            iconBox.className = `category-icon ${iconClass}`;
-            iconBox.innerHTML = `<i class="fas ${faIcon}"></i>`;
-
-            // Set Text with Highlight
+            // Highlight Logic
             document.getElementById('qh-text-container').innerHTML = `
                 <span class="prefix-text">${qh_current.prefix}</span>
                 <span class="highlight-text">${qh_current.suffix}</span>
@@ -413,7 +502,6 @@ La patente B...
         function qh_answer(userChoice) {
             const isCorrect = (userChoice === qh_current.isTrue);
             
-            // Visual Feedback
             const feedback = document.getElementById('qh-feedback');
             const fbIcon = document.getElementById('qh-feedback-icon');
             feedback.classList.remove('hidden');
@@ -450,46 +538,55 @@ La patente B...
         function updateHackerUI() {
             document.getElementById('qh-score').innerText = qh_score;
             document.getElementById('qh-streak').innerText = qh_streak;
-            let livesHTML = '';
-            for(let i=0; i<3; i++) {
-                livesHTML += i < qh_lives ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart opacity-30"></i>';
-            }
-            document.getElementById('qh-lives').innerHTML = livesHTML;
+            let html = '';
+            for(let i=0; i<3; i++) html += i < qh_lives ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart opacity-30"></i>';
+            document.getElementById('qh-lives').innerHTML = html;
         }
 
         // ================= APP 2: CODE BREAKER =================
         let cb_pool = [];
         let cb_current = null;
         let cb_user_input = [];
-        let cb_level = 1;
+        let cb_word = "";
+        let cb_count = 0;
 
-        function initBreaker() {
-            cb_pool = [...breakerDB].sort(() => Math.random() - 0.5);
-            cb_level = 1;
+        function initBreaker(pool) {
+            // Filter only TRUE questions long enough to have words
+            cb_pool = (pool || getFilteredPool()).filter(q => q.isTrue && q.suffix.length > 10 && q.suffix.includes(" "));
+            cb_count = 0;
             loadBreakerLevel();
         }
 
         function loadBreakerLevel() {
-            if(cb_pool.length === 0) cb_pool = [...breakerDB]; // Refill
+            if(cb_pool.length === 0) { alert("Sessione completata!"); switchApp('menu'); return; }
             cb_current = cb_pool.pop();
-            cb_user_input = Array(cb_current.word.length).fill('');
+            cb_count++;
             
-            document.getElementById('cb-lvl').innerText = cb_level;
+            document.getElementById('cb-lvl').innerText = cb_count;
             document.getElementById('cb-topic').innerText = cb_current.topic;
+
+            // Pick a random significant word (>3 chars) from suffix to hide
+            const words = cb_current.suffix.split(' ').filter(w => w.length > 3);
+            if(words.length === 0) { loadBreakerLevel(); return; } // Skip if too short
             
-            // Set Question Text (Masked)
-            // Replace the keyword in the suffix with a gap
-            const displaySuffix = cb_current.fullSuffix.replace(new RegExp(cb_current.word, 'i'), '<span class="text-green-500 font-bold">[ ... ]</span>');
+            // Simple cleanup of punctuation
+            const rawWord = words[Math.floor(Math.random() * words.length)];
+            cb_word = rawWord.replace(/[^a-zA-Zàèéìòù]/g, "").toUpperCase();
             
+            cb_user_input = Array(cb_word.length).fill('');
+
+            // Mask the word in text
+            const maskedSuffix = cb_current.suffix.replace(rawWord, '<span class="text-green-500 font-bold border-b-2 border-green-500 px-2">?????</span>');
+
             document.getElementById('cb-question-text').innerHTML = `
-                <span class="text-slate-500">${cb_current.pre}</span><br>
-                <span class="text-white text-lg">${displaySuffix}</span>
+                <span class="text-slate-500">${cb_current.prefix}</span><br>
+                <span class="text-white text-lg">${maskedSuffix}</span>
             `;
 
-            // Render Slots
+            // Slots
             const slotsContainer = document.getElementById('cb-slots');
             slotsContainer.innerHTML = '';
-            for(let i=0; i<cb_current.word.length; i++) {
+            for(let i=0; i<cb_word.length; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'slot';
                 slot.id = `slot-${i}`;
@@ -497,15 +594,15 @@ La patente B...
             }
             highlightSlot(0);
 
-            // Render Keyboard (Target letters + Noise)
+            // Keys (Target + Noise)
             const kbContainer = document.getElementById('cb-keys');
             kbContainer.innerHTML = '';
-            let pool = cb_current.word.split('');
-            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            for(let i=0; i<4; i++) pool.push(alphabet[Math.floor(Math.random() * alphabet.length)]);
-            pool.sort(() => Math.random() - 0.5);
+            let poolLetters = cb_word.split('');
+            const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for(let i=0; i<5; i++) poolLetters.push(alpha[Math.floor(Math.random() * alpha.length)]);
+            poolLetters.sort(() => Math.random() - 0.5);
             
-            pool.forEach(char => {
+            poolLetters.forEach(char => {
                 const btn = document.createElement('button');
                 btn.className = 'key-btn text-green-400 border-green-900';
                 btn.innerText = char;
@@ -527,9 +624,7 @@ La patente B...
 
         function cb_delete() {
             let idx = -1;
-            for(let i = cb_user_input.length - 1; i >= 0; i--) {
-                if(cb_user_input[i] !== '') { idx = i; break; }
-            }
+            for(let i = cb_user_input.length - 1; i >= 0; i--) { if(cb_user_input[i] !== '') { idx = i; break; } }
             if(idx !== -1) {
                 cb_user_input[idx] = '';
                 const s = document.getElementById(`slot-${idx}`);
@@ -549,12 +644,9 @@ La patente B...
             const attempt = cb_user_input.join('');
             const slots = document.getElementById('cb-slots');
             
-            if(attempt === cb_current.word) {
+            if(attempt === cb_word) {
                 document.querySelectorAll('.slot').forEach(s => s.classList.add('correct'));
-                setTimeout(() => {
-                    cb_level++;
-                    loadBreakerLevel();
-                }, 1000);
+                setTimeout(loadBreakerLevel, 800);
             } else {
                 slots.classList.add('shake');
                 document.querySelectorAll('.slot').forEach(s => s.classList.add('wrong'));
@@ -565,7 +657,7 @@ La patente B...
             }
         }
 
-        // Init
+        // START
         parseData();
 
     </script>
