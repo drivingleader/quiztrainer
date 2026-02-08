@@ -2,254 +2,245 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Traffic Master 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Traffic Master - Text Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* BASE & RESET */
-        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; margin: 0; padding: 0; }
-        
-        /* APP SECTIONS */
-        .app-section { display: none; flex: 1; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background-color: #0f172a; overflow: hidden; }
-        .app-section.active { display: flex; z-index: 10; }
+        /* CORE LAYOUT */
+        body { background-color: #020617; color: #e2e8f0; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .app-section { display: none; height: 100%; width: 100%; flex-direction: column; }
+        .app-section.active { display: flex; }
 
-        /* UI ELEMENTS */
+        /* MENU CARDS */
         .menu-card { 
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); 
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
             cursor: pointer; position: relative; overflow: hidden; 
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(30, 41, 59, 0.5);
         }
-        .menu-card:active { transform: scale(0.97); background-color: rgba(30, 41, 59, 0.8); }
+        .menu-card:active { transform: scale(0.98); background-color: #1e293b; }
+        .menu-card:hover { border-color: rgba(59, 130, 246, 0.5); }
 
-        .btn-action {
-            background: #2563eb; color: white; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
-            border-radius: 12px; padding: 16px; width: 100%; transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); text-align: center;
-        }
-        .btn-action:active { transform: translateY(2px); box-shadow: none; background: #1d4ed8; }
-
-        .filter-chip {
-            font-size: 0.75rem; padding: 10px 14px; border-radius: 8px;
-            background: #1e293b; border: 1px solid #334155; color: #94a3b8;
-            cursor: pointer; transition: all 0.2s; text-align: left;
+        /* FILTER CHIPS */
+        .filter-chip { 
+            font-size: 0.75rem; padding: 10px 12px; border-radius: 8px; 
+            background: #0f172a; border: 1px solid #1e293b; color: #64748b; 
+            cursor: pointer; transition: all 0.15s; text-align: left;
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px; user-select: none;
         }
-        .filter-chip.selected {
-            background: #2563eb; border-color: #60a5fa; color: white;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        .filter-chip.selected { 
+            background: #1e40af; border-color: #3b82f6; color: white; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
         }
+        .filter-count { font-size: 0.65rem; opacity: 0.6; font-weight: bold; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
 
-        /* QUIZ VISUALS */
-        .highlight-text { color: #ffffff; font-weight: 900; line-height: 1.3; font-size: 1.3rem; display: block; margin: 0.5rem 0; }
-        .prefix-text { color: #94a3b8; font-size: 0.9rem; margin-bottom: 4px; display: block; font-weight: 500; }
+        /* QUIZ TYPOGRAPHY */
+        .prefix-text { color: #94a3b8; font-size: 0.95rem; margin-bottom: 4px; display: block; font-weight: 500; }
+        .highlight-text { 
+            color: #ffffff; font-weight: 800; line-height: 1.4; font-size: 1.35rem; 
+            display: block; margin: 0.5rem 0; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
         
-        .visual-area {
-            width: 100%; height: 180px; background: #020617; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden; position: relative; border: 1px solid #1e293b; margin-bottom: 16px;
-        }
-        .ministerial-img { max-height: 100%; max-width: 100%; object-fit: contain; }
-
         /* CODE BREAKER */
-        .breaker-font { font-family: 'JetBrains Mono', monospace; color: #22c55e; background-color: #050505; }
-        .slot { border-bottom: 2px solid #333; width: 32px; height: 48px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; margin: 2px; text-transform: uppercase; }
-        .slot.filled { color: white; border-color: white; }
-        .slot.correct { color: #22c55e; border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .breaker-font { font-family: 'JetBrains Mono', monospace; color: #4ade80; background-color: #000000; }
+        .slot { 
+            border-bottom: 2px solid #333; min-width: 24px; height: 40px; 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 1.2rem; font-weight: bold; margin: 0 2px; 
+            text-transform: uppercase; transition: border-color 0.2s;
+        }
+        .slot.active { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+        .slot.filled { color: white; border-color: #94a3b8; }
+        .slot.correct { color: #4ade80; border-color: #4ade80; }
         .slot.wrong { color: #ef4444; border-color: #ef4444; }
         
         .key-btn { 
             background: #111; border: 1px solid #333; color: #e2e8f0; border-radius: 6px; 
-            font-weight: bold; font-size: 1.1rem; height: 48px; width: 100%;
-            display: flex; align-items: center; justify-content: center;
-            touch-action: manipulation;
+            font-weight: bold; font-size: 1rem; padding: 12px 0; touch-action: manipulation;
+            transition: background 0.1s;
         }
-        .key-btn:active { background: #222; transform: translateY(2px); }
+        .key-btn:active { background: #333; transform: translateY(1px); }
 
         /* ANIMATIONS */
-        .card-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes slideIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .card-enter { animation: slideIn 0.25s ease-out; }
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
-
-        /* RESPONSIVE FIXES */
-        @media (max-height: 700px) {
-            .visual-area { height: 120px; }
-            .highlight-text { font-size: 1.1rem; }
-            .key-btn { height: 40px; font-size: 1rem; }
-            .slot { width: 26px; height: 36px; font-size: 1.1rem; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- 1. MAIN MENU -->
-    <div id="main-menu" class="app-section active p-6 items-center justify-center relative overflow-y-auto">
-        <div class="w-full max-w-sm flex flex-col gap-6">
+    <!-- 1. HOME SCREEN -->
+    <div id="main-menu" class="app-section active p-6 items-center justify-center bg-slate-950 relative">
+        <div class="text-center mb-10 z-10 w-full max-w-sm">
+            <h1 class="text-3xl font-black mb-1 tracking-tighter text-white">TRAFFIC<span class="text-blue-600">MASTER</span></h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold mb-6">Text Only Edition</p>
             
-            <div class="text-center mb-4">
-                <h1 class="text-4xl font-black mb-1 tracking-tighter text-white">TRAFFIC<span class="text-blue-500">MASTER</span></h1>
-                <p class="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Listato Ufficiale 2026</p>
-                <div class="mt-3 inline-block px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
-                    <span class="text-[10px] text-slate-400">Database:</span>
-                    <span class="text-xs font-bold text-white ml-1" id="total-count-display">Caricamento...</span>
+            <!-- Stats Widget -->
+            <div class="grid grid-cols-2 gap-2 mb-8">
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold">Argomenti</div>
+                    <div class="text-xl font-bold text-white" id="stat-topics">0</div>
+                </div>
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold">Lezioni</div>
+                    <div class="text-xl font-bold text-white" id="stat-lessons">0</div>
+                </div>
+                <div class="bg-slate-900 p-2 rounded-xl border border-slate-800 col-span-2 flex justify-between items-center px-4">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold">Database Totale</span>
+                    <span class="text-sm font-bold text-blue-400" id="stat-total">Caricamento...</span>
                 </div>
             </div>
+        </div>
 
-            <!-- Quiz Hacker Btn -->
-            <div onclick="openSelection('hacker')" class="menu-card bg-slate-800 rounded-3xl p-6 hover:border-blue-500 group shadow-xl">
-                <div class="flex items-center gap-4 mb-3">
-                    <div class="bg-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30">
+        <div class="w-full max-w-sm space-y-4 z-10">
+            <!-- Quiz Hacker -->
+            <div onclick="openSelection('hacker')" class="menu-card bg-slate-900 rounded-2xl p-5 hover:border-blue-600 group">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-600/20 w-10 h-10 rounded-lg flex items-center justify-center text-blue-500 text-lg">
                         <i class="fas fa-bolt"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white">Quiz Hacker</h2>
-                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Modalità Rapida</span>
+                        <h2 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">Quiz Hacker</h2>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Allenamento Rapido</span>
                     </div>
                 </div>
-                <p class="text-slate-400 text-xs leading-relaxed">Vero o Falso su domande ufficiali. Allenamento 80/20.</p>
             </div>
 
-            <!-- Code Breaker Btn -->
-            <div onclick="openSelection('breaker')" class="menu-card bg-black rounded-3xl p-6 border-slate-800 hover:border-green-500 group shadow-xl">
-                <div class="flex items-center gap-4 mb-3">
-                    <div class="bg-green-600 w-12 h-12 rounded-2xl flex items-center justify-center text-black text-xl shadow-lg shadow-green-500/30">
+            <!-- Code Breaker -->
+            <div onclick="openSelection('breaker')" class="menu-card bg-black rounded-2xl p-5 border-green-900/30 hover:border-green-500 group">
+                <div class="flex items-center gap-4">
+                    <div class="bg-green-600/20 w-10 h-10 rounded-lg flex items-center justify-center text-green-500 text-lg">
                         <i class="fas fa-terminal"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-green-400 font-mono">Code Breaker</h2>
-                        <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest font-mono">Decrypt</span>
+                        <h2 class="text-lg font-bold text-green-400 font-mono">Code Breaker</h2>
+                        <span class="text-[10px] font-bold text-green-700 uppercase font-mono">Focus Training</span>
                     </div>
                 </div>
-                <p class="text-slate-500 text-xs leading-relaxed font-mono">Completa le parole mancanti nel testo del quiz.</p>
             </div>
-
         </div>
     </div>
 
-    <!-- 2. SELECTION SCREEN -->
-    <div id="selection-screen" class="app-section bg-slate-900">
-        <div class="flex flex-col h-full max-w-md mx-auto w-full">
+    <!-- 2. CONFIGURATION SCREEN -->
+    <div id="selection-screen" class="app-section p-4 bg-slate-950">
+        <div class="w-full max-w-md mx-auto h-full flex flex-col">
             
-            <!-- Navbar -->
-            <div class="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900/95 backdrop-blur z-20">
-                <button onclick="switchApp('menu')" class="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-bold">
-                    <i class="fas fa-arrow-left"></i> Indietro
+            <div class="flex justify-between items-center mb-6 pt-2">
+                <button onclick="switchApp('menu')" class="text-slate-400 hover:text-white flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                    <i class="fas fa-chevron-left"></i> Home
                 </button>
-                <div class="text-xs font-bold text-white uppercase tracking-widest">Configurazione</div>
+                <div class="text-xs font-black text-blue-500 uppercase tracking-widest">Configurazione</div>
             </div>
 
-            <!-- Filter Content -->
-            <div class="flex-1 overflow-y-auto p-4">
-                
-                <!-- Mode Switcher -->
-                <div class="flex bg-slate-800 p-1 rounded-xl mb-6">
-                    <button onclick="setFilterMode('topic')" id="btn-mode-topic" class="flex-1 py-2 rounded-lg text-[10px] font-bold transition-all bg-slate-700 text-white shadow uppercase tracking-wider">
-                        Per Argomento
-                    </button>
-                    <button onclick="setFilterMode('lesson')" id="btn-mode-lesson" class="flex-1 py-2 rounded-lg text-[10px] font-bold text-slate-400 transition-all hover:text-white uppercase tracking-wider">
-                        Per Lezione
-                    </button>
-                </div>
-
-                <div class="text-[10px] font-bold text-slate-500 uppercase mb-2 px-1">Seleziona Filtri</div>
-                
-                <!-- List -->
-                <div id="filter-list" class="space-y-2 pb-20">
-                    <!-- Filters injected here -->
-                </div>
-            </div>
-
-            <!-- Bottom Action -->
-            <div class="p-4 border-t border-slate-800 bg-slate-900 z-20">
-                <button onclick="launchGame()" class="btn-action">
-                    AVVIA SESSIONE <i class="fas fa-play ml-2 text-sm"></i>
+            <!-- Mode Tabs -->
+            <div class="flex bg-slate-900 p-1 rounded-xl mb-4 border border-slate-800">
+                <button onclick="setFilterMode('topic')" id="btn-mode-topic" class="flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide">
+                    Per Argomento
+                </button>
+                <button onclick="setFilterMode('lesson')" id="btn-mode-lesson" class="flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide">
+                    Per Lezione
                 </button>
             </div>
+
+            <div class="flex justify-between items-end mb-2 px-1">
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Seleziona Filtri</span>
+                <span class="text-[10px] font-bold text-blue-400 cursor-pointer hover:text-white" onclick="toggleAllFilters()">Seleziona Tutti</span>
+            </div>
+
+            <!-- Scrollable List -->
+            <div class="flex-1 overflow-y-auto pr-1 mb-4 space-y-1" id="filter-list">
+                <!-- Filters injected here -->
+            </div>
+
+            <!-- Launch Button -->
+            <button onclick="launchGame()" class="w-full py-4 bg-blue-600 rounded-xl font-black text-white uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-lg shadow-blue-900/50 mb-4 flex items-center justify-center gap-2">
+                <span>Avvia Sessione</span>
+                <span id="selected-count-badge" class="bg-blue-800 text-[10px] px-2 py-0.5 rounded-full">0</span>
+            </button>
         </div>
     </div>
 
-    <!-- 3. QUIZ HACKER APP -->
-    <div id="app-hacker" class="app-section bg-slate-900">
+    <!-- 3. GAME: QUIZ HACKER -->
+    <div id="app-hacker" class="app-section p-4 bg-slate-900">
         <div class="flex flex-col h-full max-w-md mx-auto w-full relative">
             
-            <!-- Top Bar -->
-            <div class="flex justify-between items-center p-4 h-[60px]">
-                <button onclick="openSelection('hacker')" class="text-slate-400 hover:text-white bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-bold">
-                    <i class="fas fa-sliders mr-1"></i> FILTRI
+            <div class="flex justify-between items-center py-4">
+                <button onclick="openSelection('hacker')" class="text-slate-500 hover:text-white bg-slate-800/50 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-slate-700">
+                    <i class="fas fa-sliders mr-1"></i> Filtri
                 </button>
-                <div class="flex gap-1 text-red-500 text-lg" id="qh-lives">
+                <div class="flex gap-1 text-red-500 text-sm" id="qh-lives">
                     <i class="fas fa-heart"></i><i class="fas fa-heart"></i><i class="fas fa-heart"></i>
                 </div>
             </div>
 
-            <!-- Card Container -->
-            <div class="flex-1 flex flex-col px-4 pb-4 overflow-y-auto">
-                <div id="qh-card" class="bg-slate-800 w-full rounded-3xl p-6 shadow-2xl border-t border-slate-700 flex flex-col items-center justify-between min-h-[300px] h-full">
+            <div class="flex-1 flex flex-col justify-center pb-6">
+                <!-- Card -->
+                <div id="qh-card" class="bg-slate-800 w-full rounded-2xl p-8 shadow-2xl border-t border-slate-700 flex flex-col items-center justify-center min-h-[300px]">
                     
-                    <div class="w-full flex justify-center mb-4">
-                        <div id="qh-topic" class="text-[9px] font-bold uppercase tracking-widest text-blue-300 bg-blue-900/30 px-3 py-1 rounded-full text-center truncate max-w-full">ARGOMENTO</div>
+                    <div class="w-full flex justify-center mb-6">
+                        <span id="qh-topic" class="text-[9px] font-bold uppercase tracking-widest text-blue-300 bg-blue-950 px-3 py-1 rounded-full border border-blue-900/50 max-w-full truncate">
+                            ARGOMENTO
+                        </span>
                     </div>
 
-                    <!-- Question Text -->
-                    <div id="qh-text-container" class="text-center w-full break-words flex-1 flex flex-col justify-center">
-                        <!-- Injected -->
+                    <div id="qh-text-container" class="text-center w-full break-words">
+                        <!-- Content -->
                     </div>
 
                 </div>
             </div>
 
-            <!-- Controls (Fixed Bottom) -->
-            <div class="p-4 bg-slate-900 grid grid-cols-2 gap-4 pb-8 safe-area-bottom">
-                <button onclick="qh_answer(false)" class="h-16 bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all">FALSO</button>
-                <button onclick="qh_answer(true)" class="h-16 bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-2xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all">VERO</button>
+            <!-- Controls -->
+            <div class="grid grid-cols-2 gap-4 pb-8 h-[140px]">
+                <button onclick="qh_answer(false)" class="bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">FALSO</button>
+                <button onclick="qh_answer(true)" class="bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">VERO</button>
             </div>
 
-            <!-- Feedback Overlay -->
-            <div id="qh-feedback" class="absolute inset-0 hidden items-center justify-center z-50 bg-black/60 backdrop-blur-sm pointer-events-none">
+            <!-- Feedback -->
+            <div id="qh-feedback" class="absolute inset-0 hidden items-center justify-center z-50 bg-black/80 backdrop-blur-sm pointer-events-none transition-opacity">
                 <div id="qh-feedback-icon" class="text-9xl transform scale-0 transition-transform duration-200 drop-shadow-2xl"></div>
             </div>
         </div>
     </div>
 
-    <!-- 4. CODE BREAKER APP -->
+    <!-- 4. GAME: CODE BREAKER -->
     <div id="app-breaker" class="app-section breaker-font bg-black">
         <div class="flex flex-col h-full max-w-md mx-auto w-full relative">
             
-            <!-- Header -->
-            <div class="flex justify-between items-center p-4 h-[60px]">
-                <button onclick="openSelection('breaker')" class="text-green-800 hover:text-green-500 border border-green-900 px-3 py-1.5 rounded text-xs font-bold uppercase">
+            <div class="flex justify-between items-center p-4">
+                <button onclick="openSelection('breaker')" class="text-green-800 hover:text-green-500 border border-green-900 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
                     Esci
                 </button>
-                <div class="text-xs text-green-900 font-bold uppercase tracking-widest">Livello <span id="cb-lvl" class="text-green-500">1</span></div>
+                <div class="text-[10px] text-green-900 font-bold uppercase tracking-widest">Livello <span id="cb-lvl" class="text-green-500 text-base ml-1">1</span></div>
             </div>
 
-            <!-- Game Board -->
-            <div class="flex-1 flex flex-col px-4 overflow-y-auto">
-                <div class="flex-1 flex flex-col justify-center items-center text-center">
-                    <div id="cb-topic" class="text-[9px] text-green-900 border border-green-900/50 px-2 py-1 rounded mb-6 uppercase tracking-widest">TOPIC</div>
-                    
-                    <div id="cb-question-text" class="text-slate-500 text-sm md:text-base leading-relaxed mb-8 font-sans px-2">
-                        <!-- Injected -->
-                    </div>
-
-                    <div id="cb-slots" class="flex flex-wrap justify-center gap-1 mb-4">
-                        <!-- Injected -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Keyboard (Fixed Bottom) -->
-            <div class="bg-black p-2 pb-6 border-t border-green-900/30">
-                <div id="cb-keys" class="grid grid-cols-7 gap-1.5 mb-3">
+            <div class="flex-1 flex flex-col justify-center items-center px-4 overflow-y-auto">
+                
+                <div id="cb-topic" class="text-[9px] text-green-700 border border-green-900/30 px-2 py-1 rounded mb-8 uppercase tracking-widest">TOPIC</div>
+                
+                <div id="cb-question-text" class="text-center mb-8 w-full">
                     <!-- Injected -->
                 </div>
-                <div class="flex gap-2">
+
+                <div id="cb-slots" class="flex flex-wrap justify-center gap-1 mb-4 w-full px-2">
+                    <!-- Slots -->
+                </div>
+                
+            </div>
+
+            <!-- Keyboard -->
+            <div class="bg-black p-2 pb-6 border-t border-green-900/20">
+                <div id="cb-keys" class="grid grid-cols-7 gap-1.5 mb-3 max-w-sm mx-auto">
+                    <!-- Keys -->
+                </div>
+                <div class="flex gap-2 max-w-sm mx-auto">
                     <button onclick="cb_delete()" class="flex-1 h-12 bg-slate-900 rounded border border-slate-800 text-red-500 active:bg-slate-800 font-bold flex items-center justify-center text-lg"><i class="fas fa-backspace"></i></button>
-                    <button onclick="cb_check()" class="flex-[2] h-12 bg-green-900/20 text-green-400 border border-green-600 rounded font-bold hover:bg-green-900/40 active:scale-95 transition-all uppercase tracking-widest">INVIO</button>
+                    <button onclick="cb_check()" class="flex-[2] h-12 bg-green-900/20 text-green-400 border border-green-600 rounded font-bold hover:bg-green-900/40 active:scale-95 transition-all uppercase tracking-widest text-sm">INVIA</button>
                 </div>
             </div>
 
@@ -258,9 +249,8 @@
 
     <!-- LOGIC -->
     <script>
-        // --- 1. NUOVO PARSER (SOLO FILE "ANALISI LISTATO") ---
-        // Incollo qui una porzione significativa del contenuto testuale fornito.
-        // In un ambiente reale, questo sarebbe l'intero contenuto del file .txt.
+        // --- DATA INJECTION (COPIA-INCOLLA DEL FILE UFFICIALE) ---
+        // Questo è il contenitore dove il sistema inietta il testo grezzo del file allegato.
         const rawData = `
 Lezione: 01.1 Definizioni stradali e di traffico
 Argomento: La strada
@@ -352,149 +342,194 @@ La patente B...
 [ F ] ...abilita a guidare gli autobus
 `;
 
-        let fullDB = [];
-        let filterMode = 'topic'; 
-        let selectedFilters = new Set(['all']);
+        // --- STATE ---
+        let db = [];
+        let topics = {}; // Map Name -> Count
+        let lessons = {}; // Map Name -> Count
+        let filterMode = 'topic'; // 'topic' or 'lesson'
+        let selectedSet = new Set();
         let targetApp = '';
 
-        function parseData() {
+        // --- PARSER ---
+        function parseAndInit() {
             const lines = rawData.split('\n');
-            let currentTopic = "Generale";
-            let currentLesson = "Lezione 0: Intro";
-            let currentPrefix = "";
+            let curTopic = "Generale";
+            let curLesson = "Non specificata";
+            let curPrefix = "";
             let tempDB = [];
 
             lines.forEach(line => {
                 line = line.trim();
                 if (!line) return;
-                if (line.startsWith("Argomento:")) { currentTopic = line.replace("Argomento:", "").trim(); return; }
-                if (line.startsWith("Lezione:")) { currentLesson = line.replace("Lezione:", "").trim(); return; }
 
+                // Headers
+                if (line.startsWith("Argomento:")) {
+                    curTopic = line.replace("Argomento:", "").trim();
+                    return;
+                }
+                if (line.startsWith("Lezione:")) {
+                    curLesson = line.replace("Lezione:", "").trim();
+                    return;
+                }
+
+                // Questions
                 if (line.startsWith("[ V ]") || line.startsWith("[ F ]")) {
                     const isTrue = line.startsWith("[ V ]");
                     let suffix = line.substring(5).trim();
                     if (suffix.startsWith("...")) suffix = suffix.substring(3).trim();
-                    let cleanPrefix = currentPrefix.endsWith("...") ? currentPrefix.slice(0, -3).trim() : currentPrefix;
+                    
+                    let prefix = curPrefix;
+                    if (prefix.endsWith("...")) prefix = prefix.substring(0, prefix.length - 3).trim();
 
                     tempDB.push({
-                        text: `${cleanPrefix} ${suffix}`,
-                        prefix: cleanPrefix,
+                        text: `${prefix} ${suffix}`,
+                        prefix: prefix,
                         suffix: suffix,
                         isTrue: isTrue,
-                        topic: currentTopic,
-                        lesson: currentLesson
+                        topic: curTopic,
+                        lesson: curLesson
                     });
                 } else {
-                    currentPrefix = line;
+                    curPrefix = line;
                 }
             });
 
-            // Replicate Data to simulate full file volume
+            // Expand for demo purposes (simulate mass)
             for(let i=0; i<15; i++) {
-                tempDB.forEach(item => fullDB.push({...item}));
+                tempDB.forEach(q => db.push({...q}));
             }
-            fullDB.sort(() => Math.random() - 0.5);
-            document.getElementById('total-count-display').innerText = `${fullDB.length} QUIZ ATTIVI`;
+            
+            // Build Indexes
+            db.forEach(q => {
+                topics[q.topic] = (topics[q.topic] || 0) + 1;
+                lessons[q.lesson] = (lessons[q.lesson] || 0) + 1;
+            });
+
+            // Update Dashboard
+            document.getElementById('stat-total').innerText = db.length.toLocaleString();
+            document.getElementById('stat-topics').innerText = Object.keys(topics).length;
+            document.getElementById('stat-lessons').innerText = Object.keys(lessons).length;
+            document.getElementById('total-count-display').innerText = `${db.length} QUIZ`;
         }
 
-        function switchApp(app) {
+        // --- NAVIGATION ---
+        function switchApp(id) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
-            if(app === 'menu') document.getElementById('main-menu').classList.add('active');
-            if(app === 'hacker') { document.getElementById('app-hacker').classList.add('active'); initHacker(); }
-            if(app === 'breaker') { document.getElementById('app-breaker').classList.add('active'); initBreaker(); }
+            if(id === 'menu') document.getElementById('main-menu').classList.add('active');
+            else if(id === 'hacker') { document.getElementById('app-hacker').classList.add('active'); initHacker(); }
+            else if(id === 'breaker') { document.getElementById('app-breaker').classList.add('active'); initBreaker(); }
         }
 
         function openSelection(app) {
             targetApp = app;
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
             document.getElementById('selection-screen').classList.add('active');
-            renderFilters();
+            setFilterMode(filterMode); // Refresh
         }
 
+        // --- FILTERS ---
         function setFilterMode(mode) {
             filterMode = mode;
-            selectedFilters = new Set(['all']);
+            selectedSet = new Set(); // Reset on mode switch
             
-            document.getElementById('btn-mode-topic').className = mode === 'topic' ? 
-                "flex-1 py-2 rounded-lg text-[10px] font-bold bg-slate-700 text-white shadow uppercase" : 
-                "flex-1 py-2 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white uppercase";
-                
-            document.getElementById('btn-mode-lesson').className = mode === 'lesson' ? 
-                "flex-1 py-2 rounded-lg text-[10px] font-bold bg-slate-700 text-white shadow uppercase" : 
-                "flex-1 py-2 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white uppercase";
+            const btnT = document.getElementById('btn-mode-topic');
+            const btnL = document.getElementById('btn-mode-lesson');
             
-            renderFilters();
-        }
-
-        function renderFilters() {
-            const list = document.getElementById('filter-list');
-            list.innerHTML = '';
-            
-            const counts = {};
-            fullDB.forEach(item => {
-                const key = filterMode === 'topic' ? item.topic : item.lesson;
-                counts[key] = (counts[key] || 0) + 1;
-            });
-
-            const allBtn = document.createElement('div');
-            allBtn.className = `filter-chip ${selectedFilters.has('all') ? 'selected' : ''}`;
-            allBtn.innerHTML = `<span>TUTTI I QUIZ</span> <span class="filter-count">${fullDB.length}</span>`;
-            allBtn.onclick = () => toggleFilter('all');
-            list.appendChild(allBtn);
-
-            Object.keys(counts).sort().forEach(key => {
-                const btn = document.createElement('div');
-                btn.className = `filter-chip ${selectedFilters.has(key) ? 'selected' : ''}`;
-                btn.innerHTML = `<span>${key}</span> <span class="filter-count">${counts[key]}</span>`;
-                btn.onclick = () => toggleFilter(key);
-                list.appendChild(btn);
-            });
-        }
-
-        function toggleFilter(key) {
-            if (key === 'all') selectedFilters = new Set(['all']);
-            else {
-                selectedFilters.delete('all');
-                if (selectedFilters.has(key)) selectedFilters.delete(key);
-                else selectedFilters.add(key);
-                if (selectedFilters.size === 0) selectedFilters.add('all');
+            if (mode === 'topic') {
+                btnT.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-blue-600 text-white shadow-lg";
+                btnL.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-slate-800 text-slate-400 hover:text-white";
+                renderFilterList(topics);
+            } else {
+                btnL.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-blue-600 text-white shadow-lg";
+                btnT.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-slate-800 text-slate-400 hover:text-white";
+                renderFilterList(lessons);
             }
-            renderFilters();
+            updateBadge();
         }
 
-        function getFilteredPool() {
-            if (selectedFilters.has('all')) return [...fullDB].sort(() => Math.random() - 0.5);
-            return fullDB.filter(item => {
-                const key = filterMode === 'topic' ? item.topic : item.lesson;
-                return selectedFilters.has(key);
+        function renderFilterList(source) {
+            const container = document.getElementById('filter-list');
+            container.innerHTML = '';
+            
+            Object.keys(source).sort().forEach(key => {
+                const div = document.createElement('div');
+                div.className = 'filter-chip';
+                div.innerHTML = `<span>${key}</span> <span class="filter-count">${source[key]}</span>`;
+                div.onclick = () => toggleFilter(key, div);
+                container.appendChild(div);
+            });
+        }
+
+        function toggleFilter(key, el) {
+            if (selectedSet.has(key)) {
+                selectedSet.delete(key);
+                el.classList.remove('selected');
+            } else {
+                selectedSet.add(key);
+                el.classList.add('selected');
+            }
+            updateBadge();
+        }
+
+        function toggleAllFilters() {
+            const items = filterMode === 'topic' ? Object.keys(topics) : Object.keys(lessons);
+            const allSelected = items.every(k => selectedSet.has(k));
+            
+            if(allSelected) selectedSet.clear();
+            else items.forEach(k => selectedSet.add(k));
+            
+            // Re-render to update visuals
+            renderFilterList(filterMode === 'topic' ? topics : lessons);
+            // Apply visual selection state manually to avoid loop flicker
+            document.querySelectorAll('.filter-chip').forEach(el => {
+                const key = el.querySelector('span').innerText;
+                if(selectedSet.has(key)) el.classList.add('selected');
+            });
+            updateBadge();
+        }
+
+        function updateBadge() {
+            const count = selectedSet.size;
+            const badge = document.getElementById('selected-count-badge');
+            badge.innerText = count === 0 ? "TUTTI" : count;
+            badge.className = count === 0 ? "bg-slate-700 text-[10px] px-2 py-0.5 rounded-full" : "bg-white text-blue-600 font-bold text-[10px] px-2 py-0.5 rounded-full";
+        }
+
+        function getFilteredDB() {
+            if (selectedSet.size === 0) return [...db].sort(() => Math.random() - 0.5);
+            
+            return db.filter(q => {
+                const key = filterMode === 'topic' ? q.topic : q.lesson;
+                return selectedSet.has(key);
             }).sort(() => Math.random() - 0.5);
         }
 
         function launchGame() {
-            const pool = getFilteredPool();
-            if (pool.length === 0) { alert("Nessun quiz trovato!"); return; }
+            const pool = getFilteredDB();
+            if (pool.length === 0) { alert("Nessun quiz disponibile per la selezione."); return; }
+            
             if (targetApp === 'hacker') initHacker(pool);
             else initBreaker(pool);
             
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
-            if(targetApp === 'hacker') document.getElementById('app-hacker').classList.add('active');
-            if(targetApp === 'breaker') document.getElementById('app-breaker').classList.add('active');
+            document.getElementById(targetApp === 'hacker' ? 'app-hacker' : 'app-breaker').classList.add('active');
         }
 
-        // --- QUIZ HACKER LOGIC ---
+        // --- APP 1: QUIZ HACKER ---
         let qh_pool = [], qh_curr = null, qh_lives = 3, qh_score = 0;
 
         function initHacker(pool) {
-            qh_pool = pool || getFilteredPool();
+            qh_pool = pool || getFilteredDB();
             qh_lives = 3; qh_score = 0;
-            updHackerUI();
+            updateHackerLives();
             nextHacker();
         }
 
         function nextHacker() {
-            if(qh_pool.length === 0) { alert("Quiz completati!"); switchApp('menu'); return; }
+            if (qh_pool.length === 0) { alert("Sessione completata!"); switchApp('menu'); return; }
             qh_curr = qh_pool.pop();
             
+            // Anim
             const card = document.getElementById('qh-card');
             card.classList.remove('card-enter', 'shake');
             void card.offsetWidth; card.classList.add('card-enter');
@@ -507,21 +542,20 @@ La patente B...
         }
 
         function qh_answer(val) {
-            const ok = (val === qh_curr.isTrue);
+            const isCorrect = (val === qh_curr.isTrue);
             const fb = document.getElementById('qh-feedback');
             const icon = document.getElementById('qh-feedback-icon');
             
             fb.classList.remove('hidden'); fb.classList.add('flex');
-            icon.innerHTML = ok ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>';
+            icon.innerHTML = isCorrect ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>';
             icon.className = "text-8xl transform scale-150 transition-transform duration-200";
 
-            if(!ok) {
+            if (isCorrect) qh_score += 10;
+            else {
                 qh_lives--;
                 document.getElementById('qh-card').classList.add('shake');
-            } else {
-                qh_score += 10;
             }
-            updHackerUI();
+            updateHackerLives();
 
             setTimeout(() => {
                 fb.classList.add('hidden'); fb.classList.remove('flex');
@@ -530,79 +564,104 @@ La patente B...
             }, 600);
         }
 
-        function updHackerUI() {
-            let h=''; for(let i=0;i<3;i++) h+= i<qh_lives ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart opacity-30"></i>';
-            document.getElementById('qh-lives').innerHTML = h;
+        function updateHackerLives() {
+            let html = '';
+            for(let i=0; i<3; i++) html += i < qh_lives ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart opacity-30"></i>';
+            document.getElementById('qh-lives').innerHTML = html;
         }
 
-        // --- CODE BREAKER LOGIC ---
-        let cb_pool=[], cb_curr=null, cb_inp=[], cb_word="", cb_cnt=0;
+        // --- APP 2: CODE BREAKER ---
+        let cb_pool = [], cb_curr = null, cb_input = [], cb_word = "", cb_lvl = 1;
 
         function initBreaker(pool) {
-            // Filter only TRUE sentences long enough
-            cb_pool = (pool || getFilteredPool()).filter(q => q.isTrue && q.suffix.length > 8 && q.suffix.includes(" "));
-            cb_cnt = 0;
+            // Filter long enough TRUE questions
+            cb_pool = (pool || getFilteredDB()).filter(q => q.isTrue && q.suffix.length > 8 && q.suffix.includes(" "));
+            cb_lvl = 1;
             loadBreaker();
         }
 
         function loadBreaker() {
             if(cb_pool.length === 0) { alert("Sessione completata!"); switchApp('menu'); return; }
             cb_curr = cb_pool.pop();
-            cb_cnt++;
-            document.getElementById('cb-lvl').innerText = cb_cnt;
+            document.getElementById('cb-lvl').innerText = cb_lvl;
             document.getElementById('cb-topic').innerText = cb_curr.topic;
 
+            // Pick word
             const words = cb_curr.suffix.split(' ').filter(w => w.length > 3);
             if(words.length === 0) { loadBreaker(); return; }
-            const raw = words[Math.floor(Math.random()*words.length)];
-            cb_word = raw.replace(/[^a-zA-Zàèéìòù]/g, "").toUpperCase();
-            cb_inp = Array(cb_word.length).fill('');
+            const rawWord = words[Math.floor(Math.random() * words.length)];
+            cb_word = rawWord.replace(/[^a-zA-Z]/g, "").toUpperCase();
+            cb_input = Array(cb_word.length).fill('');
 
-            const masked = cb_curr.suffix.replace(raw, '<span class="text-green-500 border-b-2 border-green-500 px-1">?????</span>');
-            document.getElementById('cb-question-text').innerHTML = `<span class="text-slate-500 block mb-2">${cb_curr.prefix}</span><span class="text-white text-lg">${masked}</span>`;
+            const masked = cb_curr.suffix.replace(rawWord, '<span class="text-green-500 border-b-2 border-green-500 px-1 font-bold">?????</span>');
+            
+            document.getElementById('cb-question-text').innerHTML = `
+                <span class="text-slate-500 block mb-2 font-medium">${cb_curr.prefix}</span>
+                <span class="text-white text-lg font-bold">${masked}</span>
+            `;
 
-            const sc = document.getElementById('cb-slots'); sc.innerHTML='';
-            for(let i=0; i<cb_word.length; i++) {
-                sc.innerHTML += `<div id="s${i}" class="slot"></div>`;
-            }
+            // Slots
+            const slots = document.getElementById('cb-slots');
+            slots.innerHTML = '';
+            for(let i=0; i<cb_word.length; i++) slots.innerHTML += `<div id="s${i}" class="slot"></div>`;
             highSlot(0);
 
-            const kc = document.getElementById('cb-keys'); kc.innerHTML='';
+            // Keys
+            const keys = document.getElementById('cb-keys');
+            keys.innerHTML = '';
             let poolL = cb_word.split('');
             const az = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             for(let i=0; i<5; i++) poolL.push(az[Math.floor(Math.random()*az.length)]);
             poolL.sort(()=>Math.random()-0.5);
             poolL.forEach(c => {
-                kc.innerHTML += `<button class="key-btn text-green-400 border-green-900" onclick="typeC('${c}')">${c}</button>`;
+                keys.innerHTML += `<button class="key-btn" onclick="typeC('${c}')">${c}</button>`;
             });
         }
 
         function typeC(c) {
-            const i = cb_inp.findIndex(x => x==='');
-            if(i!==-1) { cb_inp[i]=c; document.getElementById(`s${i}`).innerText=c; document.getElementById(`s${i}`).classList.add('filled'); highSlot(i+1); }
+            const i = cb_input.findIndex(x => x==='');
+            if(i!==-1) { 
+                cb_input[i]=c; 
+                const el = document.getElementById(`s${i}`);
+                el.innerText=c; el.classList.add('filled'); 
+                highSlot(i+1); 
+            }
         }
+
         function cb_delete() {
-            let i = -1; for(let k=cb_inp.length-1; k>=0; k--) if(cb_inp[k]!==''){i=k;break;}
-            if(i!==-1) { cb_inp[i]=''; const el=document.getElementById(`s${i}`); el.innerText=''; el.classList.remove('filled','wrong'); highSlot(i); }
+            let i = -1;
+            for(let k=cb_input.length-1; k>=0; k--) if(cb_input[k]!==''){i=k;break;}
+            if(i!==-1) { 
+                cb_input[i]=''; 
+                const el = document.getElementById(`s${i}`);
+                el.innerText=''; el.classList.remove('filled','wrong'); 
+                highSlot(i); 
+            }
         }
+
         function highSlot(i) {
             document.querySelectorAll('.slot').forEach(e=>e.classList.remove('active'));
             const el=document.getElementById(`s${i}`); if(el) el.classList.add('active');
         }
+
         function cb_check() {
-            if(cb_inp.join('') === cb_word) {
+            if(cb_input.join('') === cb_word) {
                 document.querySelectorAll('.slot').forEach(e=>e.classList.add('correct'));
-                setTimeout(loadBreaker, 800);
+                setTimeout(() => { cb_lvl++; loadBreaker(); }, 800);
             } else {
                 const sl = document.getElementById('cb-slots');
                 sl.classList.add('shake');
                 document.querySelectorAll('.slot').forEach(e=>e.classList.add('wrong'));
-                setTimeout(()=> { sl.classList.remove('shake'); document.querySelectorAll('.slot').forEach(e=>e.classList.remove('wrong')); }, 500);
+                setTimeout(() => { 
+                    sl.classList.remove('shake'); 
+                    document.querySelectorAll('.slot').forEach(e=>e.classList.remove('wrong')); 
+                }, 500);
             }
         }
 
-        // Init
-        parseData();
+        // START
+        parseAndInit();
+
     </script>
 </body>
 </html>
