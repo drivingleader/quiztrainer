@@ -3,261 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Traffic Master - Text Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
+    <title>SYNAPSE - Drive Core</title>
     <style>
-        /* CORE LAYOUT */
-        body { background-color: #020617; color: #e2e8f0; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        .app-section { display: none; height: 100%; width: 100%; flex-direction: column; }
-        .app-section.active { display: flex; }
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-glass: rgba(24, 24, 27, 0.7);
+            --primary: #22d3ee; /* Cyan */
+            --primary-glow: rgba(34, 211, 238, 0.4);
+            --accent: #c084fc; /* Purple */
+            --success: #4ade80;
+            --error: #f43f5e;
+            --text: #e4e4e7;
+            --text-dim: #71717a;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+        }
 
-        /* MENU CARDS */
-        .menu-card { 
-            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            cursor: pointer; position: relative; overflow: hidden; 
-            border: 1px solid rgba(30, 41, 59, 0.5);
-        }
-        .menu-card:active { transform: scale(0.98); background-color: #1e293b; }
-        .menu-card:hover { border-color: rgba(59, 130, 246, 0.5); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
-        /* FILTER CHIPS */
-        .filter-chip { 
-            font-size: 0.75rem; padding: 10px 12px; border-radius: 8px; 
-            background: #0f172a; border: 1px solid #1e293b; color: #64748b; 
-            cursor: pointer; transition: all 0.15s; text-align: left;
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 6px; user-select: none;
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
         }
-        .filter-chip.selected { 
-            background: #1e40af; border-color: #3b82f6; color: white; 
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
-        }
-        .filter-count { font-size: 0.65rem; opacity: 0.6; font-weight: bold; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
 
-        /* QUIZ TYPOGRAPHY */
-        .prefix-text { color: #94a3b8; font-size: 0.95rem; margin-bottom: 4px; display: block; font-weight: 500; }
-        .highlight-text { 
-            color: #ffffff; font-weight: 800; line-height: 1.4; font-size: 1.35rem; 
-            display: block; margin: 0.5rem 0; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        /* --- UI LAYER --- */
+        .ui-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; /* Let clicks pass to canvas/game */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+            padding: 1.5rem;
         }
-        
-        /* CODE BREAKER */
-        .breaker-font { font-family: 'JetBrains Mono', monospace; color: #4ade80; background-color: #000000; }
-        .slot { 
-            border-bottom: 2px solid #333; min-width: 24px; height: 40px; 
-            display: flex; justify-content: center; align-items: center; 
-            font-size: 1.2rem; font-weight: bold; margin: 0 2px; 
-            text-transform: uppercase; transition: border-color 0.2s;
-        }
-        .slot.active { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); }
-        .slot.filled { color: white; border-color: #94a3b8; }
-        .slot.correct { color: #4ade80; border-color: #4ade80; }
-        .slot.wrong { color: #ef4444; border-color: #ef4444; }
-        
-        .key-btn { 
-            background: #111; border: 1px solid #333; color: #e2e8f0; border-radius: 6px; 
-            font-weight: bold; font-size: 1rem; padding: 12px 0; touch-action: manipulation;
-            transition: background 0.1s;
-        }
-        .key-btn:active { background: #333; transform: translateY(1px); }
 
-        /* ANIMATIONS */
-        @keyframes slideIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .card-enter { animation: slideIn 0.25s ease-out; }
-        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .brand {
+            font-family: var(--font-mono);
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+        .brand span { color: var(--primary); }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .stat-item b { color: var(--text); margin-right: 4px; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #27272a;
+            border-radius: 2px;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Footer / Context Info */
+        .footer {
+            text-align: center;
+            pointer-events: auto;
+        }
+        .context-chip {
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: inline-block;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            font-family: var(--font-mono);
+        }
+        .tutorial-hint {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-bottom: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- GAME LAYER --- */
+        #game-container {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+            touch-action: none;
+            background: radial-gradient(circle at center, #131316 0%, #09090b 100%);
+        }
+
+        /* Nodes (DOM elements for better text handling) */
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 1rem;
+            transition: transform 0.1s, box-shadow 0.3s;
+            cursor: pointer;
+            will-change: transform, left, top;
+        }
+
+        .node-core {
+            width: 140px;
+            height: 140px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 30px var(--primary-glow);
+            z-index: 5;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 1rem;
+            border-radius: 50%; /* Circle */
+        }
+
+        .node-option {
+            max-width: 160px;
+            padding: 0.8rem 1.2rem;
+            background: var(--surface);
+            border: 1px solid #3f3f46;
+            color: var(--text);
+            font-size: 0.85rem;
+            z-index: 4;
+            border-radius: 1rem; /* Rounded Rect */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            user-select: none;
+        }
+
+        .node-option.connected {
+            border-color: var(--success);
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+        }
+
+        .node-option.wrong {
+            border-color: var(--error);
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        /* --- CANVAS --- */
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 2; /* Below nodes */
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
+        @keyframes shake {
+            10%, 90% { transform: translate(-52%, -50%); }
+            20%, 80% { transform: translate(-48%, -50%); }
+            30%, 50%, 70% { transform: translate(-54%, -50%); }
+            40%, 60% { transform: translate(-46%, -50%); }
+        }
+
+        /* Overlay Messages */
+        .overlay-msg {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            font-size: 3rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 20;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+        }
+        .overlay-msg.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .text-success { color: var(--success); text-shadow: 0 0 30px rgba(74, 222, 128, 0.6); }
+        .text-error { color: var(--error); text-shadow: 0 0 30px rgba(244, 63, 94, 0.6); }
+
     </style>
 </head>
 <body>
 
-    <!-- 1. HOME SCREEN -->
-    <div id="main-menu" class="app-section active p-6 items-center justify-center bg-slate-950 relative">
-        <div class="text-center mb-10 z-10 w-full max-w-sm">
-            <h1 class="text-3xl font-black mb-1 tracking-tighter text-white">TRAFFIC<span class="text-blue-600">MASTER</span></h1>
-            <p class="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold mb-6">Text Only Edition</p>
-            
-            <!-- Stats Widget -->
-            <div class="grid grid-cols-2 gap-2 mb-8">
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold">Argomenti</div>
-                    <div class="text-xl font-bold text-white" id="stat-topics">0</div>
+    <!-- UI LAYER -->
+    <div class="ui-layer">
+        <div>
+            <div class="header">
+                <div class="brand">SYNAPSE<span>.</span></div>
+                <div class="stats">
+                    <div class="stat-item"><b id="score-display">0</b> PTS</div>
+                    <div class="stat-item" style="color:var(--primary)"><b id="streak-display">0</b> STREAK</div>
                 </div>
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold">Lezioni</div>
-                    <div class="text-xl font-bold text-white" id="stat-lessons">0</div>
-                </div>
-                <div class="bg-slate-900 p-2 rounded-xl border border-slate-800 col-span-2 flex justify-between items-center px-4">
-                    <span class="text-[10px] text-slate-500 uppercase font-bold">Database Totale</span>
-                    <span class="text-sm font-bold text-blue-400" id="stat-total">Caricamento...</span>
-                </div>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-fill"></div>
             </div>
         </div>
 
-        <div class="w-full max-w-sm space-y-4 z-10">
-            <!-- Quiz Hacker -->
-            <div onclick="openSelection('hacker')" class="menu-card bg-slate-900 rounded-2xl p-5 hover:border-blue-600 group">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600/20 w-10 h-10 rounded-lg flex items-center justify-center text-blue-500 text-lg">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">Quiz Hacker</h2>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase">Allenamento Rapido</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Code Breaker -->
-            <div onclick="openSelection('breaker')" class="menu-card bg-black rounded-2xl p-5 border-green-900/30 hover:border-green-500 group">
-                <div class="flex items-center gap-4">
-                    <div class="bg-green-600/20 w-10 h-10 rounded-lg flex items-center justify-center text-green-500 text-lg">
-                        <i class="fas fa-terminal"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-green-400 font-mono">Code Breaker</h2>
-                        <span class="text-[10px] font-bold text-green-700 uppercase font-mono">Focus Training</span>
-                    </div>
-                </div>
-            </div>
+        <div class="footer">
+            <div id="tutorial-txt" class="tutorial-hint">Collega le affermazioni VERE al nucleo centrale</div>
+            <div id="context-chip" class="context-chip">CARICAMENTO DATI...</div>
         </div>
     </div>
 
-    <!-- 2. CONFIGURATION SCREEN -->
-    <div id="selection-screen" class="app-section p-4 bg-slate-950">
-        <div class="w-full max-w-md mx-auto h-full flex flex-col">
-            
-            <div class="flex justify-between items-center mb-6 pt-2">
-                <button onclick="switchApp('menu')" class="text-slate-400 hover:text-white flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-                    <i class="fas fa-chevron-left"></i> Home
-                </button>
-                <div class="text-xs font-black text-blue-500 uppercase tracking-widest">Configurazione</div>
-            </div>
+    <!-- GAME MESSAGES -->
+    <div id="msg-overlay" class="overlay-msg"></div>
 
-            <!-- Mode Tabs -->
-            <div class="flex bg-slate-900 p-1 rounded-xl mb-4 border border-slate-800">
-                <button onclick="setFilterMode('topic')" id="btn-mode-topic" class="flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide">
-                    Per Argomento
-                </button>
-                <button onclick="setFilterMode('lesson')" id="btn-mode-lesson" class="flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide">
-                    Per Lezione
-                </button>
-            </div>
-
-            <div class="flex justify-between items-end mb-2 px-1">
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Seleziona Filtri</span>
-                <span class="text-[10px] font-bold text-blue-400 cursor-pointer hover:text-white" onclick="toggleAllFilters()">Seleziona Tutti</span>
-            </div>
-
-            <!-- Scrollable List -->
-            <div class="flex-1 overflow-y-auto pr-1 mb-4 space-y-1" id="filter-list">
-                <!-- Filters injected here -->
-            </div>
-
-            <!-- Launch Button -->
-            <button onclick="launchGame()" class="w-full py-4 bg-blue-600 rounded-xl font-black text-white uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-lg shadow-blue-900/50 mb-4 flex items-center justify-center gap-2">
-                <span>Avvia Sessione</span>
-                <span id="selected-count-badge" class="bg-blue-800 text-[10px] px-2 py-0.5 rounded-full">0</span>
-            </button>
-        </div>
+    <!-- GAME CONTAINER -->
+    <div id="game-container">
+        <canvas id="connections-canvas"></canvas>
+        <!-- Nodes injected here via JS -->
     </div>
 
-    <!-- 3. GAME: QUIZ HACKER -->
-    <div id="app-hacker" class="app-section p-4 bg-slate-900">
-        <div class="flex flex-col h-full max-w-md mx-auto w-full relative">
-            
-            <div class="flex justify-between items-center py-4">
-                <button onclick="openSelection('hacker')" class="text-slate-500 hover:text-white bg-slate-800/50 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-slate-700">
-                    <i class="fas fa-sliders mr-1"></i> Filtri
-                </button>
-                <div class="flex gap-1 text-red-500 text-sm" id="qh-lives">
-                    <i class="fas fa-heart"></i><i class="fas fa-heart"></i><i class="fas fa-heart"></i>
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col justify-center pb-6">
-                <!-- Card -->
-                <div id="qh-card" class="bg-slate-800 w-full rounded-2xl p-8 shadow-2xl border-t border-slate-700 flex flex-col items-center justify-center min-h-[300px]">
-                    
-                    <div class="w-full flex justify-center mb-6">
-                        <span id="qh-topic" class="text-[9px] font-bold uppercase tracking-widest text-blue-300 bg-blue-950 px-3 py-1 rounded-full border border-blue-900/50 max-w-full truncate">
-                            ARGOMENTO
-                        </span>
-                    </div>
-
-                    <div id="qh-text-container" class="text-center w-full break-words">
-                        <!-- Content -->
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="grid grid-cols-2 gap-4 pb-8 h-[140px]">
-                <button onclick="qh_answer(false)" class="bg-slate-800 border-b-4 border-red-900 text-red-500 rounded-xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">FALSO</button>
-                <button onclick="qh_answer(true)" class="bg-slate-800 border-b-4 border-green-900 text-green-500 rounded-xl font-black text-2xl active:border-b-0 active:translate-y-1 transition-all hover:bg-slate-750">VERO</button>
-            </div>
-
-            <!-- Feedback -->
-            <div id="qh-feedback" class="absolute inset-0 hidden items-center justify-center z-50 bg-black/80 backdrop-blur-sm pointer-events-none transition-opacity">
-                <div id="qh-feedback-icon" class="text-9xl transform scale-0 transition-transform duration-200 drop-shadow-2xl"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. GAME: CODE BREAKER -->
-    <div id="app-breaker" class="app-section breaker-font bg-black">
-        <div class="flex flex-col h-full max-w-md mx-auto w-full relative">
-            
-            <div class="flex justify-between items-center p-4">
-                <button onclick="openSelection('breaker')" class="text-green-800 hover:text-green-500 border border-green-900 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider">
-                    Esci
-                </button>
-                <div class="text-[10px] text-green-900 font-bold uppercase tracking-widest">Livello <span id="cb-lvl" class="text-green-500 text-base ml-1">1</span></div>
-            </div>
-
-            <div class="flex-1 flex flex-col justify-center items-center px-4 overflow-y-auto">
-                
-                <div id="cb-topic" class="text-[9px] text-green-700 border border-green-900/30 px-2 py-1 rounded mb-8 uppercase tracking-widest">TOPIC</div>
-                
-                <div id="cb-question-text" class="text-center mb-8 w-full">
-                    <!-- Injected -->
-                </div>
-
-                <div id="cb-slots" class="flex flex-wrap justify-center gap-1 mb-4 w-full px-2">
-                    <!-- Slots -->
-                </div>
-                
-            </div>
-
-            <!-- Keyboard -->
-            <div class="bg-black p-2 pb-6 border-t border-green-900/20">
-                <div id="cb-keys" class="grid grid-cols-7 gap-1.5 mb-3 max-w-sm mx-auto">
-                    <!-- Keys -->
-                </div>
-                <div class="flex gap-2 max-w-sm mx-auto">
-                    <button onclick="cb_delete()" class="flex-1 h-12 bg-slate-900 rounded border border-slate-800 text-red-500 active:bg-slate-800 font-bold flex items-center justify-center text-lg"><i class="fas fa-backspace"></i></button>
-                    <button onclick="cb_check()" class="flex-[2] h-12 bg-green-900/20 text-green-400 border border-green-600 rounded font-bold hover:bg-green-900/40 active:scale-95 transition-all uppercase tracking-widest text-sm">INVIA</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- LOGIC -->
     <script>
-        // --- DATA INJECTION (COPIA-INCOLLA DEL FILE UFFICIALE) ---
-        // Questo è il contenitore dove il sistema inietta il testo grezzo del file allegato.
-        const rawData = `
-Lezione: 01.1 Definizioni stradali e di traffico
+        /* * =========================================
+         * DATA ENGINE
+         * =========================================
+         */
+        
+        // This is a subset of the uploaded file for demonstration. 
+        // In a real scenario, this string would contain the full text content.
+        const RAW_DATA = `
 Argomento: La strada
 La strada è...
 [ F ] ...riservata alla circolazione dei soli autoveicoli e motocicli
 [ V ] ...aperta alla circolazione dei pedoni, degli animali e dei veicoli
 [ F ] ...qualsiasi area asfaltata, limitata lateralmente dagli attraversamenti pedonali
+La strada è normalmente...
+[ F ] ...riservata alla circolazione dei soli veicoli e animali
 La strada può...
 [ V ] ...comprendere le piste ciclabili
 [ V ] ...essere suddivisa in carreggiate
@@ -282,385 +293,463 @@ Fanno parte della carreggiata...
 [ V ] ...le corsie di marcia
 [ V ] ...gli attraversamenti pedonali
 [ V ] ...gli attraversamenti ciclabili
-Non fanno parte della carreggiata...
-[ V ] ...le banchine
-[ V ] ...i marciapiedi
+[ F ] ...i marciapiedi
+[ F ] ...le banchine
+[ F ] ...le corsie di emergenza delle autostrade
+La carreggiata non comprende...
 [ V ] ...le piste ciclabili
-[ V ] ...le piazzole di sosta
-Le corsie...
-[ V ] ...possono essere vietate a taluni tipi di veicoli
-[ V ] ...possono essere destinate alla normale marcia dei veicoli
-[ V ] ...possono essere destinate ai rallentamenti dei veicoli in uscita dalle autostrade
-[ V ] ...possono essere riservate alla circolazione di alcune categorie di veicoli (taxi, autobus, ecc.)
-[ V ] ...possono essere destinate alle accelerazioni dei veicoli in entrata nelle autostrade
-[ V ] ...possono essere destinate al sorpasso
-[ F ] ...possono essere a doppio senso di circolazione
-[ F ] ...sono sempre delimitate da strisce continue
-[ F ] ...formano la carreggiata solo se sono più di due
-Argomento: Segnaletica
-Il segnale raffigurato preannuncia...
-[ V ] ...un tratto di strada deformata
-[ V ] ...una strada in cattivo stato
-[ V ] ...una variazione di pendenza
-[ V ] ...un dosso artificiale
-[ V ] ...una curva pericolosa a destra
-[ V ] ...un passaggio a livello senza barriere
-[ F ] ...un divieto di sosta
-[ F ] ...un senso unico alternato
-Il segnale raffigurato vieta...
-[ V ] ...il transito a tutti i veicoli
-[ V ] ...il sorpasso
-[ V ] ...la sosta
-[ V ] ...l'accesso
-[ F ] ...la fermata
-[ F ] ...di svoltare a destra
-Argomento: Norme di Comportamento
-Il conducente deve...
-[ V ] ...regolare la velocità in relazione alle condizioni della strada
-[ V ] ...dare la precedenza a destra negli incroci non regolati
-[ V ] ...usare il casco se guida un motociclo
-[ V ] ...fermarsi al semaforo rosso
-[ F ] ...passare per primo sempre
-[ F ] ...suonare il clacson in centro abitato
-È vietato...
-[ V ] ...sorpassare in curva
-[ V ] ...invertire la marcia in autostrada
-[ V ] ...guidare dopo aver assunto alcol
-[ V ] ...gareggiare in velocità
-[ F ] ...sorpassare di notte
-[ F ] ...guidare con gli occhiali da sole
-Lezione: 02.1 Veicoli
-Argomento: Ciclomotori e Motocicli
-I ciclomotori...
-[ V ] ...hanno cilindrata fino a 50 cm3
-[ V ] ...sviluppano una velocità massima di 45 km/h
-[ F ] ...possono circolare in autostrada
-[ F ] ...non hanno bisogno di assicurazione
-La patente B...
-[ V ] ...abilita a guidare le autovetture
-[ V ] ...vale 10 anni fino ai 50 anni di età
-[ F ] ...abilita a guidare gli autobus
+[ V ] ...i marciapiedi
+Argomento: La corsia
+La corsia è...
+[ V ] ...limitata da strisce continue o discontinue
+[ V ] ...una parte della carreggiata che consente la circolazione di una sola fila di veicoli
+[ F ] ...formata da due carreggiate
+[ F ] ...una strada a scorrimento veloce
+[ F ] ...destinata solo al transito dei pedoni
+La corsia può...
+[ F ] ...essere a doppio senso di circolazione
+[ V ] ...essere destinata alla normale marcia dei veicoli
+[ V ] ...essere destinata ad effettuare sorpassi
+[ V ] ...essere riservata ai veicoli che intendono svoltare
+[ V ] ...essere destinata alle soste di emergenza, in caso di guasto o malessere
+La corsia di accelerazione...
+[ V ] ...facilita l'ingresso dei veicoli in autostrada o su strade extraurbane principali
+[ V ] ...serve ad entrare correttamente in autostrada
+[ F ] ...serve per abbandonare la carreggiata dell’autostrada
+[ V ] ...serve per rientrare sulla carreggiata dell’autostrada dopo un'area di servizio
+[ V ] ...viene utilizzata per aumentare la velocità
+La corsia di decelerazione...
+[ V ] ...facilita l'uscita dei veicoli dall'autostrada
+[ F ] ...può essere utilizzata per la sosta dei veicoli
+[ V ] ...serve per uscire correttamente da una strada extraurbana principale
+[ F ] ...serve ad entrare in autostrada
+Argomento: Intersezioni
+L'intersezione (incrocio) a raso...
+[ V ] ...richiede di fare attenzione ai veicoli provenienti dalle strade che si incrociano
+[ V ] ...è un'intersezione di due o più strade poste allo stesso livello
+[ F ] ...è un passaggio a livello
+[ F ] ...è un incrocio fra una strada statale e i binari del tram
+[ V ] ...può essere regolata da semaforo
+L'intersezione (incrocio) a livelli sfalsati...
+[ V ] ...è munita di infrastrutture (rampe, sovrappassi, sottopassi)
+[ V ] ...comprende strade situate ad altezze diverse
+[ V ] ...facilita la circolazione, perché esclude l'incrocio diretto fra i veicoli
+[ F ] ...è, di norma, regolata da semafori
+Argomento: Passaggi a livello
+In un passaggio a livello si possono trovare...
+[ V ] ...le luci rosse
+[ V ] ...le semibarriere
+[ V ] ...le barriere
+[ F ] ...le corsie di accelerazione
+Argomento: Marciapiedi
+Il marciapiede è...
+[ V ] ...una parte della strada riservata, di norma, ai pedoni
+[ V ] ...una parte della strada, rialzata o delimitata in altro modo, riservata ai pedoni
+[ F ] ...una parte della carreggiata
+[ F ] ...una parte della strada riservata anche alle biciclette
+Argomento: Zona a Traffico Limitato
+Una zona a traffico limitato è...
+[ F ] ...un'area vietata al transito dei pedoni durante le ore notturne
+[ V ] ...delimitata da appositi segnali stradali di inizio e di fine
+[ V ] ...un'area nella quale può essere limitata la circolazione solo a particolari categorie di veicoli
+[ V ] ...un'area in cui può essere limitata la circolazione dei veicoli solo in alcune ore
+Argomento: Divieti Generali
+È vietato rimuovere...
+[ V ] ...la segnaletica stradale
+Spostare la segnaletica...
+[ V ] ...stradale può comportare pericolo grave per gli altri utenti della strada
+È vietato gettare...
+[ V ] ...oggetti e rifiuti dai veicoli in movimento
+Su tutte le strade è vietato...
+[ F ] ...il transito dei veicoli che superano 10 m di lunghezza
+È vietato lanciare...
+[ V ] ...dal finestrino mozziconi di sigaretta accesi
 `;
 
-        // --- STATE ---
-        let db = [];
-        let topics = {}; // Map Name -> Count
-        let lessons = {}; // Map Name -> Count
-        let filterMode = 'topic'; // 'topic' or 'lesson'
-        let selectedSet = new Set();
-        let targetApp = '';
+        class DataParser {
+            static parse(text) {
+                const lines = text.split('\n');
+                const levels = [];
+                let currentTopic = "Generale";
+                let currentRoot = null;
+                let currentQuestions = [];
 
-        // --- PARSER ---
-        function parseAndInit() {
-            const lines = rawData.split('\n');
-            let curTopic = "Generale";
-            let curLesson = "Non specificata";
-            let curPrefix = "";
-            let tempDB = [];
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
 
-            lines.forEach(line => {
-                line = line.trim();
-                if (!line) return;
+                    // 1. Detect Topic
+                    if (line.startsWith('Argomento:') || line.startsWith('Lezione:')) {
+                        currentTopic = line.replace('Argomento:', '').replace('Lezione:', '').trim();
+                        return;
+                    }
 
-                // Headers
-                if (line.startsWith("Argomento:")) {
-                    curTopic = line.replace("Argomento:", "").trim();
-                    return;
-                }
-                if (line.startsWith("Lezione:")) {
-                    curLesson = line.replace("Lezione:", "").trim();
-                    return;
-                }
+                    // 2. Detect Answer
+                    if (line.startsWith('[ V ]') || line.startsWith('[ F ]')) {
+                        if (!currentRoot) return;
+                        const isTrue = line.startsWith('[ V ]');
+                        // Clean the text (remove [ V ] and leading ...)
+                        let txt = line.substring(5).trim();
+                        if (txt.startsWith('...')) txt = txt.substring(3).trim();
+                        
+                        currentQuestions.push({
+                            text: txt,
+                            isTrue: isTrue,
+                            id: Math.random().toString(36).substr(2, 9)
+                        });
+                    } else if (line.endsWith('...') || line.endsWith(':')) {
+                        // 3. Detect Root (Question)
+                        // If we have a previous grouping, save it
+                        if (currentRoot && currentQuestions.length > 0) {
+                            levels.push({
+                                topic: currentTopic,
+                                root: currentRoot,
+                                answers: [...currentQuestions]
+                            });
+                        }
+                        // Start new grouping
+                        currentRoot = line;
+                        currentQuestions = [];
+                    }
+                });
 
-                // Questions
-                if (line.startsWith("[ V ]") || line.startsWith("[ F ]")) {
-                    const isTrue = line.startsWith("[ V ]");
-                    let suffix = line.substring(5).trim();
-                    if (suffix.startsWith("...")) suffix = suffix.substring(3).trim();
-                    
-                    let prefix = curPrefix;
-                    if (prefix.endsWith("...")) prefix = prefix.substring(0, prefix.length - 3).trim();
-
-                    tempDB.push({
-                        text: `${prefix} ${suffix}`,
-                        prefix: prefix,
-                        suffix: suffix,
-                        isTrue: isTrue,
-                        topic: curTopic,
-                        lesson: curLesson
+                // Push last set
+                if (currentRoot && currentQuestions.length > 0) {
+                    levels.push({
+                        topic: currentTopic,
+                        root: currentRoot,
+                        answers: [...currentQuestions]
                     });
-                } else {
-                    curPrefix = line;
                 }
-            });
-
-            // Expand for demo purposes (simulate mass)
-            for(let i=0; i<15; i++) {
-                tempDB.forEach(q => db.push({...q}));
-            }
-            
-            // Build Indexes
-            db.forEach(q => {
-                topics[q.topic] = (topics[q.topic] || 0) + 1;
-                lessons[q.lesson] = (lessons[q.lesson] || 0) + 1;
-            });
-
-            // Update Dashboard
-            document.getElementById('stat-total').innerText = db.length.toLocaleString();
-            document.getElementById('stat-topics').innerText = Object.keys(topics).length;
-            document.getElementById('stat-lessons').innerText = Object.keys(lessons).length;
-            document.getElementById('total-count-display').innerText = `${db.length} QUIZ`;
-        }
-
-        // --- NAVIGATION ---
-        function switchApp(id) {
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
-            if(id === 'menu') document.getElementById('main-menu').classList.add('active');
-            else if(id === 'hacker') { document.getElementById('app-hacker').classList.add('active'); initHacker(); }
-            else if(id === 'breaker') { document.getElementById('app-breaker').classList.add('active'); initBreaker(); }
-        }
-
-        function openSelection(app) {
-            targetApp = app;
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('selection-screen').classList.add('active');
-            setFilterMode(filterMode); // Refresh
-        }
-
-        // --- FILTERS ---
-        function setFilterMode(mode) {
-            filterMode = mode;
-            selectedSet = new Set(); // Reset on mode switch
-            
-            const btnT = document.getElementById('btn-mode-topic');
-            const btnL = document.getElementById('btn-mode-lesson');
-            
-            if (mode === 'topic') {
-                btnT.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-blue-600 text-white shadow-lg";
-                btnL.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-slate-800 text-slate-400 hover:text-white";
-                renderFilterList(topics);
-            } else {
-                btnL.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-blue-600 text-white shadow-lg";
-                btnT.className = "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wide bg-slate-800 text-slate-400 hover:text-white";
-                renderFilterList(lessons);
-            }
-            updateBadge();
-        }
-
-        function renderFilterList(source) {
-            const container = document.getElementById('filter-list');
-            container.innerHTML = '';
-            
-            Object.keys(source).sort().forEach(key => {
-                const div = document.createElement('div');
-                div.className = 'filter-chip';
-                div.innerHTML = `<span>${key}</span> <span class="filter-count">${source[key]}</span>`;
-                div.onclick = () => toggleFilter(key, div);
-                container.appendChild(div);
-            });
-        }
-
-        function toggleFilter(key, el) {
-            if (selectedSet.has(key)) {
-                selectedSet.delete(key);
-                el.classList.remove('selected');
-            } else {
-                selectedSet.add(key);
-                el.classList.add('selected');
-            }
-            updateBadge();
-        }
-
-        function toggleAllFilters() {
-            const items = filterMode === 'topic' ? Object.keys(topics) : Object.keys(lessons);
-            const allSelected = items.every(k => selectedSet.has(k));
-            
-            if(allSelected) selectedSet.clear();
-            else items.forEach(k => selectedSet.add(k));
-            
-            // Re-render to update visuals
-            renderFilterList(filterMode === 'topic' ? topics : lessons);
-            // Apply visual selection state manually to avoid loop flicker
-            document.querySelectorAll('.filter-chip').forEach(el => {
-                const key = el.querySelector('span').innerText;
-                if(selectedSet.has(key)) el.classList.add('selected');
-            });
-            updateBadge();
-        }
-
-        function updateBadge() {
-            const count = selectedSet.size;
-            const badge = document.getElementById('selected-count-badge');
-            badge.innerText = count === 0 ? "TUTTI" : count;
-            badge.className = count === 0 ? "bg-slate-700 text-[10px] px-2 py-0.5 rounded-full" : "bg-white text-blue-600 font-bold text-[10px] px-2 py-0.5 rounded-full";
-        }
-
-        function getFilteredDB() {
-            if (selectedSet.size === 0) return [...db].sort(() => Math.random() - 0.5);
-            
-            return db.filter(q => {
-                const key = filterMode === 'topic' ? q.topic : q.lesson;
-                return selectedSet.has(key);
-            }).sort(() => Math.random() - 0.5);
-        }
-
-        function launchGame() {
-            const pool = getFilteredDB();
-            if (pool.length === 0) { alert("Nessun quiz disponibile per la selezione."); return; }
-            
-            if (targetApp === 'hacker') initHacker(pool);
-            else initBreaker(pool);
-            
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(targetApp === 'hacker' ? 'app-hacker' : 'app-breaker').classList.add('active');
-        }
-
-        // --- APP 1: QUIZ HACKER ---
-        let qh_pool = [], qh_curr = null, qh_lives = 3, qh_score = 0;
-
-        function initHacker(pool) {
-            qh_pool = pool || getFilteredDB();
-            qh_lives = 3; qh_score = 0;
-            updateHackerLives();
-            nextHacker();
-        }
-
-        function nextHacker() {
-            if (qh_pool.length === 0) { alert("Sessione completata!"); switchApp('menu'); return; }
-            qh_curr = qh_pool.pop();
-            
-            // Anim
-            const card = document.getElementById('qh-card');
-            card.classList.remove('card-enter', 'shake');
-            void card.offsetWidth; card.classList.add('card-enter');
-
-            document.getElementById('qh-topic').innerText = qh_curr.topic;
-            document.getElementById('qh-text-container').innerHTML = `
-                <span class="prefix-text">${qh_curr.prefix}</span>
-                <span class="highlight-text">${qh_curr.suffix}</span>
-            `;
-        }
-
-        function qh_answer(val) {
-            const isCorrect = (val === qh_curr.isTrue);
-            const fb = document.getElementById('qh-feedback');
-            const icon = document.getElementById('qh-feedback-icon');
-            
-            fb.classList.remove('hidden'); fb.classList.add('flex');
-            icon.innerHTML = isCorrect ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>';
-            icon.className = "text-8xl transform scale-150 transition-transform duration-200";
-
-            if (isCorrect) qh_score += 10;
-            else {
-                qh_lives--;
-                document.getElementById('qh-card').classList.add('shake');
-            }
-            updateHackerLives();
-
-            setTimeout(() => {
-                fb.classList.add('hidden'); fb.classList.remove('flex');
-                if(qh_lives <= 0) { alert(`GAME OVER! Punti: ${qh_score}`); switchApp('menu'); }
-                else nextHacker();
-            }, 600);
-        }
-
-        function updateHackerLives() {
-            let html = '';
-            for(let i=0; i<3; i++) html += i < qh_lives ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart opacity-30"></i>';
-            document.getElementById('qh-lives').innerHTML = html;
-        }
-
-        // --- APP 2: CODE BREAKER ---
-        let cb_pool = [], cb_curr = null, cb_input = [], cb_word = "", cb_lvl = 1;
-
-        function initBreaker(pool) {
-            // Filter long enough TRUE questions
-            cb_pool = (pool || getFilteredDB()).filter(q => q.isTrue && q.suffix.length > 8 && q.suffix.includes(" "));
-            cb_lvl = 1;
-            loadBreaker();
-        }
-
-        function loadBreaker() {
-            if(cb_pool.length === 0) { alert("Sessione completata!"); switchApp('menu'); return; }
-            cb_curr = cb_pool.pop();
-            document.getElementById('cb-lvl').innerText = cb_lvl;
-            document.getElementById('cb-topic').innerText = cb_curr.topic;
-
-            // Pick word
-            const words = cb_curr.suffix.split(' ').filter(w => w.length > 3);
-            if(words.length === 0) { loadBreaker(); return; }
-            const rawWord = words[Math.floor(Math.random() * words.length)];
-            cb_word = rawWord.replace(/[^a-zA-Z]/g, "").toUpperCase();
-            cb_input = Array(cb_word.length).fill('');
-
-            const masked = cb_curr.suffix.replace(rawWord, '<span class="text-green-500 border-b-2 border-green-500 px-1 font-bold">?????</span>');
-            
-            document.getElementById('cb-question-text').innerHTML = `
-                <span class="text-slate-500 block mb-2 font-medium">${cb_curr.prefix}</span>
-                <span class="text-white text-lg font-bold">${masked}</span>
-            `;
-
-            // Slots
-            const slots = document.getElementById('cb-slots');
-            slots.innerHTML = '';
-            for(let i=0; i<cb_word.length; i++) slots.innerHTML += `<div id="s${i}" class="slot"></div>`;
-            highSlot(0);
-
-            // Keys
-            const keys = document.getElementById('cb-keys');
-            keys.innerHTML = '';
-            let poolL = cb_word.split('');
-            const az = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            for(let i=0; i<5; i++) poolL.push(az[Math.floor(Math.random()*az.length)]);
-            poolL.sort(()=>Math.random()-0.5);
-            poolL.forEach(c => {
-                keys.innerHTML += `<button class="key-btn" onclick="typeC('${c}')">${c}</button>`;
-            });
-        }
-
-        function typeC(c) {
-            const i = cb_input.findIndex(x => x==='');
-            if(i!==-1) { 
-                cb_input[i]=c; 
-                const el = document.getElementById(`s${i}`);
-                el.innerText=c; el.classList.add('filled'); 
-                highSlot(i+1); 
+                
+                return levels;
             }
         }
 
-        function cb_delete() {
-            let i = -1;
-            for(let k=cb_input.length-1; k>=0; k--) if(cb_input[k]!==''){i=k;break;}
-            if(i!==-1) { 
-                cb_input[i]=''; 
-                const el = document.getElementById(`s${i}`);
-                el.innerText=''; el.classList.remove('filled','wrong'); 
-                highSlot(i); 
+        /* * =========================================
+         * GAME ENGINE
+         * =========================================
+         */
+
+        class Game {
+            constructor() {
+                this.container = document.getElementById('game-container');
+                this.canvas = document.getElementById('connections-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // UI Elements
+                this.scoreEl = document.getElementById('score-display');
+                this.streakEl = document.getElementById('streak-display');
+                this.barEl = document.getElementById('progress-bar');
+                this.contextEl = document.getElementById('context-chip');
+                this.msgOverlay = document.getElementById('msg-overlay');
+
+                // State
+                this.levels = DataParser.parse(RAW_DATA);
+                this.currentLevelIndex = 0;
+                this.score = 0;
+                this.streak = 0;
+                this.currentNodes = [];
+                this.coreNode = null;
+                this.activeLine = null; // { x, y } of pointer
+                this.connections = []; // { from, to, type }
+                this.completedTrueCount = 0;
+                this.totalTrueCount = 0;
+
+                // Physics/Animation
+                this.animId = null;
+                this.center = { x: window.innerWidth/2, y: window.innerHeight/2 };
+
+                this.initListeners();
+                this.startLevel();
+                this.resize();
+                this.loop();
             }
-        }
 
-        function highSlot(i) {
-            document.querySelectorAll('.slot').forEach(e=>e.classList.remove('active'));
-            const el=document.getElementById(`s${i}`); if(el) el.classList.add('active');
-        }
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.center = { x: window.innerWidth/2, y: window.innerHeight/2 };
+                if (this.coreNode) {
+                    this.coreNode.x = this.center.x;
+                    this.coreNode.y = this.center.y;
+                    this.updateDOMPos(this.coreNode);
+                }
+            }
 
-        function cb_check() {
-            if(cb_input.join('') === cb_word) {
-                document.querySelectorAll('.slot').forEach(e=>e.classList.add('correct'));
-                setTimeout(() => { cb_lvl++; loadBreaker(); }, 800);
-            } else {
-                const sl = document.getElementById('cb-slots');
-                sl.classList.add('shake');
-                document.querySelectorAll('.slot').forEach(e=>e.classList.add('wrong'));
-                setTimeout(() => { 
-                    sl.classList.remove('shake'); 
-                    document.querySelectorAll('.slot').forEach(e=>e.classList.remove('wrong')); 
+            initListeners() {
+                window.addEventListener('resize', () => this.resize());
+                
+                // Mouse/Touch for drawing line
+                const handleMove = (e) => {
+                    const x = e.clientX || e.touches[0].clientX;
+                    const y = e.clientY || e.touches[0].clientY;
+                    this.activeLine = { x, y };
+                };
+                
+                const handleEnd = () => {
+                    this.activeLine = null;
+                };
+
+                this.container.addEventListener('mousemove', handleMove);
+                this.container.addEventListener('touchmove', handleMove);
+                window.addEventListener('mouseup', handleEnd);
+                window.addEventListener('touchend', handleEnd);
+            }
+
+            startLevel() {
+                // Cleanup
+                this.container.querySelectorAll('.node').forEach(el => el.remove());
+                this.connections = [];
+                this.currentNodes = [];
+
+                // Pick Level (Random or Sequential)
+                const levelData = this.levels[Math.floor(Math.random() * this.levels.length)];
+                
+                // Setup Core
+                this.coreNode = this.createNode(levelData.root, true);
+                this.coreNode.x = this.center.x;
+                this.coreNode.y = this.center.y;
+                
+                this.contextEl.textContent = levelData.topic.toUpperCase();
+
+                // Setup Options (Max 6 to avoid clutter)
+                // Ensure mixed true/false
+                let options = levelData.answers.sort(() => 0.5 - Math.random()).slice(0, 6);
+                
+                this.totalTrueCount = options.filter(o => o.isTrue).length;
+                this.completedTrueCount = 0;
+                
+                // If no true answers in slice, force one
+                if (this.totalTrueCount === 0 && levelData.answers.some(a=>a.isTrue)) {
+                   options[0] = levelData.answers.find(a=>a.isTrue);
+                   this.totalTrueCount = 1;
+                }
+
+                // Spawn positions (Orbit)
+                const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
+                const angleStep = (2 * Math.PI) / options.length;
+
+                options.forEach((opt, index) => {
+                    const angle = index * angleStep - Math.PI/2; // Start top
+                    const node = this.createNode(opt.text, false, opt);
+                    
+                    // Initial Position
+                    node.x = this.center.x + Math.cos(angle) * radius;
+                    node.y = this.center.y + Math.sin(angle) * radius;
+                    
+                    // Animation props
+                    node.baseAngle = angle;
+                    node.radius = radius;
+                    node.floatOffset = Math.random() * 100;
+                    
+                    this.currentNodes.push(node);
+                });
+
+                this.updateProgressBar();
+            }
+
+            createNode(text, isCore, data = null) {
+                const el = document.createElement('div');
+                el.className = isCore ? 'node node-core' : 'node node-option';
+                el.textContent = text;
+                
+                const nodeObj = {
+                    el, 
+                    x: 0, 
+                    y: 0, 
+                    isCore,
+                    data, 
+                    connected: false
+                };
+
+                if (isCore) {
+                    // Interaction: Start drag
+                    const startDrag = (e) => {
+                        e.preventDefault();
+                        const x = e.clientX || e.touches[0].clientX;
+                        const y = e.clientY || e.touches[0].clientY;
+                        this.activeLine = { x, y };
+                    };
+                    el.addEventListener('mousedown', startDrag);
+                    el.addEventListener('touchstart', startDrag);
+                } else {
+                    // Interaction: Receive drop
+                    const handleHit = () => this.checkConnection(nodeObj);
+                    el.addEventListener('mouseup', handleHit);
+                    el.addEventListener('touchend', (e) => {
+                        // For touch, we need to check if the touch ended ON this element
+                        const touch = e.changedTouches[0];
+                        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (target === el) handleHit();
+                    });
+                }
+
+                this.container.appendChild(el);
+                this.updateDOMPos(nodeObj);
+                return nodeObj;
+            }
+
+            checkConnection(targetNode) {
+                if (!this.activeLine) return; // Must be dragging from core
+                if (targetNode.connected) return; // Already done
+
+                if (targetNode.data.isTrue) {
+                    // SUCCESS
+                    this.handleSuccess(targetNode);
+                } else {
+                    // FAILURE
+                    this.handleFailure(targetNode);
+                }
+                
+                this.activeLine = null; // Stop drawing line
+            }
+
+            handleSuccess(node) {
+                node.connected = true;
+                node.el.classList.add('connected');
+                
+                // Add permanent connection visual
+                this.connections.push({ node: node });
+
+                this.score += 10 + (this.streak * 2);
+                this.streak++;
+                this.completedTrueCount++;
+                
+                // FX
+                if (navigator.vibrate) navigator.vibrate(50);
+                
+                // Check Level Complete
+                if (this.completedTrueCount >= this.totalTrueCount) {
+                    setTimeout(() => this.levelComplete(), 800);
+                }
+                
+                this.updateUI();
+            }
+
+            handleFailure(node) {
+                node.el.classList.add('wrong');
+                this.streak = 0;
+                this.score = Math.max(0, this.score - 5);
+                
+                this.showOverlay("NOPE", "error");
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                setTimeout(() => {
+                    node.el.classList.remove('wrong');
                 }, 500);
+
+                this.updateUI();
+            }
+
+            levelComplete() {
+                this.showOverlay("COMPLETO", "success");
+                setTimeout(() => {
+                    this.startLevel();
+                    this.msgOverlay.className = "overlay-msg"; // Hide
+                }, 1500);
+            }
+
+            showOverlay(text, type) {
+                this.msgOverlay.textContent = text;
+                this.msgOverlay.className = `overlay-msg show text-${type}`;
+                setTimeout(() => {
+                    if (type === 'error') this.msgOverlay.className = "overlay-msg";
+                }, 1000);
+            }
+
+            updateUI() {
+                this.scoreEl.innerText = this.score;
+                this.streakEl.innerText = this.streak;
+                this.updateProgressBar();
+            }
+
+            updateProgressBar() {
+                const pct = (this.completedTrueCount / this.totalTrueCount) * 100;
+                this.barEl.style.width = `${pct}%`;
+            }
+
+            updateDOMPos(node) {
+                node.el.style.transform = `translate(-50%, -50%) translate(${node.x}px, ${node.y}px)`;
+                // NOTE: We use translate inside transform to avoid layout thrashing with left/top
+                // But since the parent is absolute inset 0, 0,0 is top left. 
+                // Wait, easier approach:
+                node.el.style.left = `${node.x}px`;
+                node.el.style.top = `${node.y}px`;
+                node.el.style.transform = `translate(-50%, -50%)`;
+            }
+
+            loop() {
+                const now = Date.now();
+                
+                // Clear Canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Animate Floating Options
+                this.currentNodes.forEach(node => {
+                    if (!node.connected) {
+                        // Gentle float
+                        const t = now * 0.001;
+                        const floatX = Math.sin(t + node.floatOffset) * 10;
+                        const floatY = Math.cos(t * 0.8 + node.floatOffset) * 10;
+                        
+                        // Update position based on orbit + float
+                        node.x = this.center.x + Math.cos(node.baseAngle) * node.radius + floatX;
+                        node.y = this.center.y + Math.sin(node.baseAngle) * node.radius + floatY;
+                        this.updateDOMPos(node);
+                    } else {
+                        // Pull closer if connected (implosion effect)
+                        const targetR = node.radius * 0.6; // Get closer to core
+                        const dx = (this.center.x + Math.cos(node.baseAngle) * targetR) - node.x;
+                        const dy = (this.center.y + Math.sin(node.baseAngle) * targetR) - node.y;
+                        node.x += dx * 0.1;
+                        node.y += dy * 0.1;
+                        this.updateDOMPos(node);
+                    }
+                });
+
+                // Draw Connections
+                // 1. Permanent (Success) connections
+                this.ctx.lineWidth = 3;
+                this.connections.forEach(conn => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.center.x, this.center.y);
+                    this.ctx.lineTo(conn.node.x, conn.node.y);
+                    this.ctx.strokeStyle = '#4ade80'; // Success Green
+                    this.ctx.stroke();
+                    
+                    // Little particle flow
+                    const t = (now % 1000) / 1000;
+                    const px = this.center.x + (conn.node.x - this.center.x) * t;
+                    const py = this.center.y + (conn.node.y - this.center.y) * t;
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, 4, 0, Math.PI*2);
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.fill();
+                });
+
+                // 2. Active Drag Line
+                if (this.activeLine) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.center.x, this.center.y);
+                    this.ctx.lineTo(this.activeLine.x, this.activeLine.y);
+                    this.ctx.strokeStyle = '#22d3ee'; // Cyan
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.shadowColor = '#22d3ee';
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                }
+
+                requestAnimationFrame(() => this.loop());
             }
         }
 
-        // START
-        parseAndInit();
+        // Init
+        window.onload = () => {
+            const game = new Game();
+        };
 
     </script>
 </body>
