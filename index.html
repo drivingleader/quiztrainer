@@ -5,77 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Patente Z - Pattern Matching</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0f0f12; /* Dark aesthetic background */
-            color: #ffffff;
-            overflow-x: hidden;
-        }
-        
-        /* Custom Scrollbar hide */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        :root {
+            --bg-dark: #09090b;
+            --card-bg: #18181b;
+            --primary: #8b5cf6; /* Violet 500 */
+            --success: #22c55e; /* Green 500 */
+            --danger: #ef4444; /* Red 500 */
         }
 
-        /* Animations */
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            overflow: hidden; /* Prevent scrolling on body, handle in containers */
+            -webkit-tap-highlight-color: transparent;
         }
         
-        @keyframes slideUp {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+        /* Utility */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
         }
 
-        .card-enter {
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .shake-anim {
-            animation: shake 0.4s ease-in-out;
+        .anim-enter { animation: slideInUp 0.3s ease-out forwards; }
+        .anim-shake { animation: shake 0.4s ease-in-out; }
+        .anim-fade { animation: fadeIn 0.2s ease-out; }
+
+        /* UI Elements */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Neon Accents */
-        .neon-green {
-            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        .btn-action {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .neon-red {
-            box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
-        }
-        .neon-purple {
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        .btn-action:active {
+            transform: scale(0.96);
         }
 
-        /* Interactive Elements */
-        .btn-press:active {
-            transform: scale(0.95);
+        /* Checkbox Custom */
+        .custom-checkbox input:checked + div {
+            background-color: var(--primary);
+            border-color: var(--primary);
         }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .custom-checkbox input:checked + div svg {
+            display: block;
         }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden text-white selection:bg-purple-500 selection:text-white">
+<body class="h-screen flex flex-col">
 
-    <!-- DATA STORAGE (Hidden) -->
+    <!-- HIDDEN DATA SOURCE -->
     <div id="raw-data" style="display:none;">
 Listato A B 2026
 Metodo:  Raggruppamento per radice testuale (Pattern Matching)
@@ -743,317 +754,416 @@ Il conducente, in vicinanza di un posteggio riservato ai taxi...
 [ F ] ...deve dare la precedenza ai taxi che s'immettono sulla strada
     </div>
 
-    <!-- MAIN APP CONTAINER -->
-    <div id="app" class="relative z-10 flex flex-col h-full max-w-md mx-auto w-full bg-[#16161a] border-x border-[#2c2c35]">
+    <!-- MAIN APP WRAPPER -->
+    <div class="relative w-full max-w-md mx-auto h-full flex flex-col bg-[#09090b] shadow-2xl overflow-hidden">
         
         <!-- HEADER -->
-        <div class="px-5 py-6 flex justify-between items-center bg-[#16161a]/90 backdrop-blur-md sticky top-0 z-50">
+        <header class="flex justify-between items-center px-6 py-5 z-20 bg-gradient-to-b from-[#09090b] via-[#09090b] to-transparent">
             <div>
-                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Patente Z</h1>
-                <p class="text-xs text-gray-400">Pattern Matching System 2026</p>
+                <h1 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 tracking-tight">
+                    Patente Z
+                </h1>
+                <p id="header-subtitle" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Mix Mode</p>
             </div>
             <div class="flex items-center gap-2">
-                <div class="px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-xs font-bold text-green-400 flex items-center gap-1">
-                    <span>🔥</span> <span id="streak-display">0</span>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 rounded-full border border-gray-800">
+                    <span class="text-green-500 text-sm">🔥</span>
+                    <span id="streak-display" class="font-bold text-sm text-gray-200">0</span>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- NAVIGATION TABS -->
-        <div class="flex px-4 gap-2 mb-2">
-            <button onclick="switchTab('quiz')" id="tab-quiz" class="flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-purple-600 text-white shadow-lg neon-purple">
-                🎯 Quiz Mode
-            </button>
-            <button onclick="switchTab('pattern')" id="tab-pattern" class="flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-gray-800 text-gray-400 hover:bg-gray-700">
-                🧠 Pattern Wall
-            </button>
-        </div>
-
-        <!-- CONTENT AREA -->
-        <div id="content-area" class="flex-1 overflow-y-auto no-scrollbar p-4 relative">
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 relative flex flex-col w-full px-6 pb-6 overflow-hidden">
             
-            <!-- QUIZ VIEW -->
-            <div id="view-quiz" class="flex flex-col h-full justify-between pb-6">
+            <!-- VIEW: QUIZ & STUDY (Shared Interface) -->
+            <div id="view-game" class="absolute inset-0 px-6 pb-6 flex flex-col z-10 transition-all duration-300">
                 
-                <!-- Progress Bar -->
-                <div class="w-full bg-gray-800 rounded-full h-1.5 mb-6">
-                    <div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <!-- Progress Indicator -->
+                <div class="w-full h-1 bg-gray-800 rounded-full mb-6 mt-2 overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 w-0 transition-all duration-300"></div>
                 </div>
 
-                <!-- Card Container -->
-                <div id="card-container" class="flex-1 flex flex-col justify-center items-center relative perspective-1000">
-                    <!-- Cards injected by JS -->
-                    <div class="text-center text-gray-500 animate-pulse">Caricamento quiz...</div>
+                <!-- CARD -->
+                <div class="flex-1 flex flex-col relative perspective-1000 mb-6">
+                    <div id="card-container" class="absolute inset-0 w-full h-full glass-panel rounded-3xl p-6 flex flex-col items-center text-center shadow-xl border-t border-white/10">
+                        
+                        <!-- Root (Top, Small, Dim) -->
+                        <div class="mb-auto w-full pt-4">
+                            <p id="card-root" class="text-lg font-medium text-gray-500 leading-snug select-none transition-all duration-300">
+                                Caricamento...
+                            </p>
+                        </div>
+
+                        <!-- Divider (Visual Anchor) -->
+                        <div class="w-16 h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent my-2"></div>
+
+                        <!-- Completion (Center, Big, Bright) -->
+                        <div class="mt-auto mb-auto w-full pb-8">
+                            <p id="card-completion" class="text-2xl md:text-3xl font-bold text-white leading-tight select-none anim-enter">
+                                --
+                            </p>
+                        </div>
+
+                        <!-- Feedback Overlay -->
+                        <div id="feedback-overlay" class="absolute inset-0 z-30 hidden flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-3xl transition-opacity duration-200">
+                            <div id="feedback-icon" class="text-7xl mb-4 transform transition-transform duration-300 scale-0"></div>
+                            <div id="feedback-text" class="text-2xl font-bold text-white tracking-wide"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="grid grid-cols-2 gap-4 mt-6">
-                    <button onclick="handleAnswer(false)" class="btn-press py-5 rounded-3xl bg-[#2c1a1d] border border-red-900/50 text-red-500 font-bold text-xl hover:bg-red-900/20 transition-colors shadow-lg shadow-red-900/10">
-                        FALSO
+                <!-- CONTROLS -->
+                <div class="grid grid-cols-2 gap-4 h-24 shrink-0">
+                    <button id="btn-false" class="btn-action rounded-2xl bg-[#2c1517] border border-red-900/40 text-red-500 font-bold text-xl flex flex-col items-center justify-center shadow-lg shadow-red-900/5 active:bg-red-900/20">
+                        <i class="ph-bold ph-x text-3xl mb-1"></i>
+                        <span>FALSO</span>
                     </button>
-                    <button onclick="handleAnswer(true)" class="btn-press py-5 rounded-3xl bg-[#1a2c22] border border-green-900/50 text-green-400 font-bold text-xl hover:bg-green-900/20 transition-colors shadow-lg shadow-green-900/10">
-                        VERO
+                    <button id="btn-true" class="btn-action rounded-2xl bg-[#132e21] border border-green-900/40 text-green-500 font-bold text-xl flex flex-col items-center justify-center shadow-lg shadow-green-900/5 active:bg-green-900/20">
+                        <i class="ph-bold ph-check text-3xl mb-1"></i>
+                        <span>VERO</span>
                     </button>
                 </div>
 
-                <!-- Lesson Info -->
-                <div id="current-lesson-info" class="text-center mt-4 text-xs text-gray-500 font-mono">
-                    --
+                <!-- Footer Info -->
+                <div id="lesson-info" class="text-center mt-3 text-[10px] text-gray-600 font-mono truncate px-4"></div>
+            </div>
+
+            <!-- VIEW: SELECTION SCREEN (For Study Mode) -->
+            <div id="view-selection" class="absolute inset-0 px-6 pb-20 flex flex-col z-20 bg-[#09090b] transform translate-y-full transition-transform duration-300 overflow-y-auto no-scrollbar">
+                <h2 class="text-xl font-bold text-white mb-2">Cosa vuoi ripassare?</h2>
+                <p class="text-sm text-gray-400 mb-6">Seleziona le lezioni per iniziare la sequenza.</p>
+                
+                <div id="selection-list" class="space-y-3 pb-24">
+                    <!-- Checkboxes injected here -->
+                </div>
+
+                <div class="fixed bottom-24 left-0 w-full px-6 pointer-events-none">
+                    <button onclick="startStudyMode()" class="pointer-events-auto w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg shadow-xl shadow-purple-900/30 active:scale-95 transition-transform">
+                        Inizia Ripasso
+                    </button>
                 </div>
             </div>
 
-            <!-- PATTERN VIEW -->
-            <div id="view-pattern" class="hidden space-y-8 pb-10">
-                <!-- Injected by JS -->
+            <!-- VIEW: PATTERN WALL -->
+            <div id="view-pattern" class="absolute inset-0 px-6 pb-24 flex flex-col z-10 bg-[#09090b] hidden overflow-y-auto no-scrollbar pt-2">
+                <!-- Injected Pattern Content -->
             </div>
 
-        </div>
+        </main>
+
+        <!-- NAVIGATION BAR -->
+        <nav class="shrink-0 h-20 px-6 pb-4 pt-2 flex items-center justify-around bg-[#09090b] border-t border-white/5 relative z-50">
+            <button onclick="setMode('mix')" id="nav-mix" class="flex flex-col items-center gap-1 text-purple-400 transition-colors">
+                <i class="ph-fill ph-shuffle text-2xl"></i>
+                <span class="text-[10px] font-bold">Mix Quiz</span>
+            </button>
+            <button onclick="toggleSelectionView()" id="nav-study" class="flex flex-col items-center gap-1 text-gray-500 transition-colors">
+                <i class="ph-fill ph-student text-2xl"></i>
+                <span class="text-[10px] font-bold">Focus Studio</span>
+            </button>
+            <button onclick="setMode('pattern')" id="nav-pattern" class="flex flex-col items-center gap-1 text-gray-500 transition-colors">
+                <i class="ph-fill ph-wall text-2xl"></i>
+                <span class="text-[10px] font-bold">Muro</span>
+            </button>
+        </nav>
+
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- DATA PARSER ---
+        // --- DATA ---
         const rawText = document.getElementById('raw-data').innerText;
-        
-        const appData = {
-            lessons: []
-        };
+        let appData = { lessons: [] };
+        let activeQueue = [];
+        let currentIndex = 0;
+        let streak = 0;
+        let isProcessing = false;
+        let currentMode = 'mix'; // 'mix' or 'study'
 
+        // --- PARSER ---
         function parseData() {
-            const lines = rawText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-            let currentLesson = null;
-            let currentTopic = null;
-            let currentRoot = null;
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let lesson = null, topic = null, root = null;
 
             lines.forEach(line => {
                 if (line.startsWith('Lezione:')) {
-                    currentLesson = { title: line.replace('Lezione:', '').trim(), topics: [] };
-                    appData.lessons.push(currentLesson);
-                    currentTopic = null;
-                    currentRoot = null;
+                    lesson = { id: appData.lessons.length, title: line.replace('Lezione:', '').trim(), topics: [] };
+                    appData.lessons.push(lesson);
+                    topic = null; root = null;
                 } else if (line.startsWith('Argomento:')) {
-                    if (currentLesson) {
-                        currentTopic = { title: line.replace('Argomento:', '').trim(), roots: [] };
-                        currentLesson.topics.push(currentTopic);
-                        currentRoot = null;
+                    if (lesson) {
+                        topic = { title: line.replace('Argomento:', '').trim(), roots: [] };
+                        lesson.topics.push(topic);
+                        root = null;
                     }
                 } else if (line.startsWith('[ V ]') || line.startsWith('[ F ]')) {
-                    if (currentRoot) {
+                    if (root) {
                         const isTrue = line.startsWith('[ V ]');
                         const text = line.substring(5).trim();
-                        currentRoot.items.push({ text, isTrue });
+                        root.items.push({ text, isTrue });
                     }
                 } else if (!line.startsWith('Listato') && !line.startsWith('Metodo:')) {
-                    // It's a root phrase (e.g. "La strada è...")
-                    if (currentTopic) {
-                        currentRoot = { text: line, items: [] };
-                        currentTopic.roots.push(currentRoot);
+                    if (topic) {
+                        root = { text: line, items: [] };
+                        topic.roots.push(root);
                     }
                 }
             });
-            console.log("Parsed Data:", appData);
         }
 
-        // --- STATE MANAGEMENT ---
-        let flatQuizList = [];
-        let currentCardIndex = 0;
-        let streak = 0;
-        let isAnimating = false;
+        // --- MODES & LOGIC ---
+        function initGame(mode, selectedLessonIds = []) {
+            activeQueue = [];
+            currentIndex = 0;
+            currentMode = mode;
+            streak = 0;
+            updateStreak();
 
-        function initApp() {
-            parseData();
-            flattenQuizData();
-            renderCard();
-            renderPatternWall();
-        }
-
-        // Flatten data for quiz mode shuffle
-        function flattenQuizData() {
-            flatQuizList = [];
-            appData.lessons.forEach(lesson => {
-                lesson.topics.forEach(topic => {
-                    topic.roots.forEach(root => {
-                        root.items.forEach(item => {
-                            flatQuizList.push({
-                                lesson: lesson.title,
-                                topic: topic.title,
-                                root: root.text,
-                                completion: item.text,
-                                isTrue: item.isTrue
+            // 1. Build Queue
+            if (mode === 'mix') {
+                // Flatten EVERYTHING and Shuffle
+                appData.lessons.forEach(l => {
+                    l.topics.forEach(t => {
+                        t.roots.forEach(r => {
+                            r.items.forEach(item => {
+                                activeQueue.push({
+                                    lesson: l.title, topic: t.title, root: r.text,
+                                    completion: item.text, isTrue: item.isTrue
+                                });
                             });
                         });
                     });
                 });
-            });
-            // Shuffle
-            flatQuizList.sort(() => Math.random() - 0.5);
+                activeQueue.sort(() => Math.random() - 0.5);
+                document.getElementById('header-subtitle').innerText = "Modalità Mix";
+            } 
+            else if (mode === 'study') {
+                // Sequential by Root for selected lessons
+                document.getElementById('header-subtitle').innerText = "Modalità Focus";
+                const lessonsToUse = appData.lessons.filter(l => selectedLessonIds.includes(l.id));
+                
+                lessonsToUse.forEach(l => {
+                    l.topics.forEach(t => {
+                        t.roots.forEach(r => {
+                            // Add all items for this root sequentially
+                            r.items.forEach(item => {
+                                activeQueue.push({
+                                    lesson: l.title, topic: t.title, root: r.text,
+                                    completion: item.text, isTrue: item.isTrue
+                                });
+                            });
+                        });
+                    });
+                });
+            }
+
+            if (activeQueue.length === 0) {
+                alert("Nessun dato trovato!");
+                return;
+            }
+
+            renderCard();
         }
 
-        // --- UI RENDERING: QUIZ ---
         function renderCard() {
-            const container = document.getElementById('card-container');
-            const item = flatQuizList[currentCardIndex];
+            if (currentIndex >= activeQueue.length) {
+                endGame();
+                return;
+            }
+
+            const item = activeQueue[currentIndex];
+            const rootEl = document.getElementById('card-root');
+            const compEl = document.getElementById('card-completion');
+            const infoEl = document.getElementById('lesson-info');
             
-            // Progress Bar
-            const percent = ((currentCardIndex) / flatQuizList.length) * 100;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
-            document.getElementById('current-lesson-info').innerText = `${item.lesson} • ${item.topic}`;
+            // Text Update
+            rootEl.innerText = item.root;
+            
+            // Animation for completion change
+            compEl.classList.remove('anim-enter');
+            void compEl.offsetWidth; // trigger reflow
+            compEl.innerText = item.completion;
+            compEl.classList.add('anim-enter');
 
-            // Create Card HTML
-            const cardHTML = `
-                <div id="active-card" class="card-enter glass w-full p-8 rounded-[2.5rem] shadow-2xl border border-white/10 flex flex-col items-center justify-center min-h-[300px] text-center relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-                    
-                    <h3 class="text-purple-400 font-bold text-lg mb-4 uppercase tracking-widest text-xs opacity-80">Radice</h3>
-                    <p class="text-2xl font-bold mb-6 text-white leading-tight">${item.root}</p>
-                    
-                    <div class="w-12 h-0.5 bg-gray-700 mb-6 rounded-full"></div>
+            // Info
+            infoEl.innerText = `${item.lesson} • ${item.topic}`;
 
-                    <h3 class="text-pink-400 font-bold text-lg mb-2 uppercase tracking-widest text-xs opacity-80">Completamento</h3>
-                    <p class="text-xl text-gray-200 font-medium leading-relaxed">${item.completion}</p>
-
-                    <!-- Feedback Overlay (Hidden initially) -->
-                    <div id="feedback-overlay" class="absolute inset-0 z-20 hidden flex-col items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300">
-                        <div id="feedback-icon" class="text-6xl mb-4 transform scale-0 transition-transform duration-300"></div>
-                        <div id="feedback-text" class="text-2xl font-bold text-white"></div>
-                    </div>
-                </div>
-            `;
-            container.innerHTML = cardHTML;
+            // Progress
+            const pct = ((currentIndex) / activeQueue.length) * 100;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
         }
 
-        // --- GAMEPLAY LOGIC ---
-        function handleAnswer(userChoice) {
-            if (isAnimating) return;
-            isAnimating = true;
+        function checkAnswer(userSaysTrue) {
+            if (isProcessing) return;
+            isProcessing = true;
 
-            const item = flatQuizList[currentCardIndex];
-            const isCorrect = userChoice === item.isTrue;
-            const card = document.getElementById('active-card');
+            const item = activeQueue[currentIndex];
+            const isCorrect = userSaysTrue === item.isTrue;
             const overlay = document.getElementById('feedback-overlay');
             const icon = document.getElementById('feedback-icon');
             const text = document.getElementById('feedback-text');
+            const container = document.getElementById('card-container');
 
             if (isCorrect) {
-                // Correct Effect
                 streak++;
-                document.getElementById('streak-display').innerText = streak;
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#a855f7', '#ec4899', '#4ade80'] // Purple, Pink, Green
-                });
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#22c55e', '#a855f7'] });
                 
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
-                
-                // Customize Feedback
-                icon.innerText = "🤩";
-                text.innerText = "ESATTO!";
+                // Success UI
+                overlay.classList.remove('hidden', 'bg-red-900/80');
+                overlay.classList.add('flex', 'bg-green-900/80'); // Green tint
+                icon.innerHTML = '<i class="ph-fill ph-check-circle text-green-400"></i>';
+                text.innerText = "CORRETTO";
                 text.className = "text-2xl font-bold text-green-400";
-                
-                // Style Card Border
-                card.style.borderColor = "rgba(74, 222, 128, 0.5)";
-                card.classList.add('neon-green');
-
             } else {
-                // Wrong Effect
                 streak = 0;
-                document.getElementById('streak-display').innerText = streak;
+                // Error UI
+                container.parentElement.classList.add('anim-shake');
+                overlay.classList.remove('hidden', 'bg-green-900/80');
+                overlay.classList.add('flex', 'bg-red-900/80'); // Red tint
+                icon.innerHTML = '<i class="ph-fill ph-x-circle text-red-400"></i>';
+                text.innerText = item.isTrue ? "Era VERO" : "Era FALSO";
+                text.className = "text-2xl font-bold text-red-400";
                 
-                card.classList.add('shake-anim');
-                
-                setTimeout(() => {
-                    overlay.classList.remove('hidden');
-                    overlay.classList.add('flex');
-                    icon.innerText = "🫠";
-                    text.innerText = item.isTrue ? "Era VERO" : "Era FALSO";
-                    text.className = "text-2xl font-bold text-red-400";
-                    
-                    card.style.borderColor = "rgba(248, 113, 113, 0.5)";
-                    card.classList.add('neon-red');
-                }, 400); // Wait for shake
+                setTimeout(() => container.parentElement.classList.remove('anim-shake'), 400);
             }
 
-            // Reveal Animation
-            setTimeout(() => {
-                icon.style.transform = "scale(1)";
-            }, 100); // Small delay for rendering
+            updateStreak();
+            
+            // Animate Icon
+            requestAnimationFrame(() => { icon.classList.remove('scale-0'); icon.classList.add('scale-100'); });
 
-            // Next Card
+            // Next
             setTimeout(() => {
-                currentCardIndex = (currentCardIndex + 1) % flatQuizList.length;
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                icon.classList.add('scale-0');
+                icon.classList.remove('scale-100');
+                
+                currentIndex++;
                 renderCard();
-                isAnimating = false;
-            }, 1800);
+                isProcessing = false;
+            }, 1200); // Slightly faster
         }
 
-        // --- PATTERN WALL LOGIC ---
+        function updateStreak() {
+            document.getElementById('streak-display').innerText = streak;
+        }
+
+        function endGame() {
+            document.getElementById('card-completion').innerText = "Hai finito!";
+            document.getElementById('card-root').innerText = "Ottimo lavoro";
+            confetti({ particleCount: 200, spread: 100 });
+        }
+
+        // --- NAVIGATION & UI ---
+        function setMode(mode) {
+            // Hide selection view if open
+            document.getElementById('view-selection').style.transform = "translateY(100%)";
+            document.getElementById('view-pattern').classList.add('hidden');
+            document.getElementById('view-game').classList.remove('hidden');
+
+            // Reset Nav Styles
+            document.querySelectorAll('nav button').forEach(b => b.classList.replace('text-purple-400', 'text-gray-500'));
+
+            if (mode === 'mix') {
+                document.getElementById('nav-mix').classList.replace('text-gray-500', 'text-purple-400');
+                initGame('mix');
+            } else if (mode === 'pattern') {
+                document.getElementById('nav-pattern').classList.replace('text-gray-500', 'text-purple-400');
+                document.getElementById('view-game').classList.add('hidden');
+                document.getElementById('view-pattern').classList.remove('hidden');
+                renderPatternWall();
+            }
+        }
+
+        function toggleSelectionView() {
+            const el = document.getElementById('view-selection');
+            const isOpen = el.style.transform === "translateY(0%)";
+            el.style.transform = isOpen ? "translateY(100%)" : "translateY(0%)";
+            
+            if (!isOpen) {
+                renderSelectionList();
+                document.querySelectorAll('nav button').forEach(b => b.classList.replace('text-purple-400', 'text-gray-500'));
+                document.getElementById('nav-study').classList.replace('text-gray-500', 'text-purple-400');
+            }
+        }
+
+        function renderSelectionList() {
+            const container = document.getElementById('selection-list');
+            container.innerHTML = '';
+            
+            appData.lessons.forEach(l => {
+                const id = `lesson-${l.id}`;
+                container.innerHTML += `
+                    <label class="custom-checkbox flex items-center p-4 rounded-xl bg-[#18181b] border border-white/5 cursor-pointer active:scale-[0.98] transition-transform">
+                        <input type="checkbox" value="${l.id}" class="hidden" checked>
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-600 flex items-center justify-center mr-4 transition-colors">
+                            <i class="ph-bold ph-check text-white text-xs hidden"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-sm text-gray-200">${l.title}</h3>
+                            <p class="text-xs text-gray-500">${l.topics.length} Argomenti</p>
+                        </div>
+                    </label>
+                `;
+            });
+        }
+
+        function startStudyMode() {
+            const checkboxes = document.querySelectorAll('#selection-list input:checked');
+            const selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (selectedIds.length === 0) {
+                alert("Seleziona almeno una lezione!");
+                return;
+            }
+
+            document.getElementById('view-selection').style.transform = "translateY(100%)";
+            document.getElementById('view-game').classList.remove('hidden');
+            document.getElementById('view-pattern').classList.add('hidden');
+            
+            initGame('study', selectedIds);
+        }
+
         function renderPatternWall() {
             const container = document.getElementById('view-pattern');
+            if(container.innerHTML.trim().length > 100) return; // Avoid re-render
+
             let html = '';
-
-            appData.lessons.forEach(lesson => {
-                lesson.topics.forEach(topic => {
+            appData.lessons.forEach(l => {
+                l.topics.forEach(t => {
                     html += `<div class="mb-8">`;
-                    html += `<h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 px-2 border-l-2 border-purple-500 pl-2">${topic.title}</h2>`;
-                    
-                    topic.roots.forEach(root => {
-                        html += `
-                            <div class="bg-[#1e1e24] rounded-2xl p-5 mb-4 border border-gray-800 shadow-md">
-                                <p class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">${root.text}</p>
-                                <div class="space-y-2">
-                        `;
-
-                        // Sort: True first, then False
-                        const sortedItems = [...root.items].sort((a, b) => b.isTrue - a.isTrue);
-
-                        sortedItems.forEach(item => {
-                            const colorClass = item.isTrue ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
-                            const icon = item.isTrue ? 'V' : 'F';
-                            html += `
-                                <div class="flex items-start gap-3 p-2 rounded-lg border ${colorClass}">
-                                    <span class="font-bold text-xs mt-1 px-1.5 py-0.5 rounded bg-black/20">${icon}</span>
-                                    <span class="text-sm leading-snug opacity-90">${item.text}</span>
-                                </div>
-                            `;
+                    html += `<h2 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-3 pl-2 border-l-2 border-purple-500">${t.title}</h2>`;
+                    t.roots.forEach(r => {
+                        html += `<div class="bg-[#18181b] rounded-2xl p-5 mb-4 border border-white/5">
+                            <p class="text-gray-400 text-sm mb-3 pb-2 border-b border-white/5">${r.text}</p>`;
+                        const sorted = [...r.items].sort((a,b) => b.isTrue - a.isTrue);
+                        sorted.forEach(item => {
+                            const color = item.isTrue ? 'text-green-400' : 'text-red-400';
+                            const icon = item.isTrue ? 'ph-check-circle' : 'ph-x-circle';
+                            html += `<div class="flex gap-3 mb-2 items-start">
+                                <i class="ph-fill ${icon} ${color} mt-0.5 shrink-0"></i>
+                                <span class="text-sm text-gray-200 leading-snug">${item.text}</span>
+                            </div>`;
                         });
-
-                        html += `</div></div>`;
+                        html += `</div>`;
                     });
-
                     html += `</div>`;
                 });
             });
-
             container.innerHTML = html;
         }
 
-        // --- TABS ---
-        function switchTab(tab) {
-            const quizView = document.getElementById('view-quiz');
-            const patternView = document.getElementById('view-pattern');
-            const tabQuiz = document.getElementById('tab-quiz');
-            const tabPattern = document.getElementById('tab-pattern');
-
-            if (tab === 'quiz') {
-                quizView.classList.remove('hidden');
-                patternView.classList.add('hidden');
-                
-                tabQuiz.className = "flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-purple-600 text-white shadow-lg neon-purple";
-                tabPattern.className = "flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-gray-800 text-gray-400 hover:bg-gray-700";
-            } else {
-                quizView.classList.add('hidden');
-                patternView.classList.remove('hidden');
-
-                tabPattern.className = "flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-pink-600 text-white shadow-lg neon-purple";
-                tabQuiz.className = "flex-1 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 bg-gray-800 text-gray-400 hover:bg-gray-700";
-            }
-        }
-
         // --- INIT ---
-        window.onload = initApp;
+        window.onload = () => {
+            parseData();
+            
+            // Attach Events
+            document.getElementById('btn-true').onclick = () => checkAnswer(true);
+            document.getElementById('btn-false').onclick = () => checkAnswer(false);
+            
+            initGame('mix'); // Default Start
+        };
 
     </script>
 </body>
