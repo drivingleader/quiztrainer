@@ -2,70 +2,304 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Patente Z - Pattern Matching</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYNAPSE - Drive Core 2026</title>
     <style>
+        /* --- RESET & VARIABLES --- */
         :root {
-            --bg-dark: #09090b;
-            --primary: #8b5cf6;
-            --header-h: 70px;
-            --nav-h: 80px;
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-glass: rgba(24, 24, 27, 0.7);
+            --primary: #22d3ee; /* Cyan */
+            --primary-glow: rgba(34, 211, 238, 0.4);
+            --accent: #c084fc; /* Purple */
+            --success: #4ade80;
+            --error: #f43f5e;
+            --text: #e4e4e7;
+            --text-dim: #71717a;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-dark);
-            color: #ffffff;
-            height: 100dvh;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            height: 100vh;
+            width: 100vw;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-            /* Questa proprietà rende i click istantanei su mobile */
-            touch-action: manipulation; 
+            display: flex;
+            flex-direction: column;
+            user-select: none;
         }
 
-        /* Utility */
-        .glass-panel {
-            background: rgba(30, 30, 35, 0.7);
+        /* --- UI LAYER --- */
+        .ui-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; /* Let clicks pass to canvas/game */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+            padding: 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .brand {
+            font-family: var(--font-mono);
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            font-size: 1.5rem;
+            color: var(--text);
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+        .brand span { color: var(--primary); }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            background: rgba(0,0,0,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-item b { color: var(--text); margin-right: 4px; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #27272a;
+            border-radius: 2px;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Footer / Context Info */
+        .footer {
+            text-align: center;
+            pointer-events: auto;
+        }
+        .context-chip {
+            background: var(--surface-glass);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: inline-block;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            font-family: var(--font-mono);
+            max-width: 80vw;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tutorial-hint {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-bottom: 5px;
+            animation: pulse 2s infinite;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Animations */
-        @keyframes slideIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
-        
-        .anim-enter { animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        .anim-shake { animation: shake 0.3s ease-in-out; }
-
-        /* Button Active State - Pure CSS for reliability */
-        .btn-game {
-            transition: transform 0.1s, filter 0.1s;
-        }
-        .btn-game:active {
-            transform: scale(0.92);
-            filter: brightness(1.2);
+        /* --- GAME LAYER --- */
+        #game-container {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+            touch-action: none;
+            background: radial-gradient(circle at center, #131316 0%, #09090b 100%);
         }
 
-        /* Checkbox Style */
-        .custom-checkbox input:checked + div {
-            background-color: var(--primary);
-            border-color: var(--primary);
+        /* Nodes */
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 1rem;
+            transition: transform 0.1s, box-shadow 0.3s;
+            cursor: pointer;
+            will-change: transform, left, top;
         }
+
+        .node-core {
+            width: 160px;
+            height: 160px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 40px var(--primary-glow);
+            z-index: 5;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 1rem;
+            border-radius: 50%;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .node-core img {
+            width: 80%;
+            height: auto;
+            max-height: 80px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .node-option {
+            max-width: 150px;
+            padding: 0.8rem 1rem;
+            background: var(--surface);
+            border: 1px solid #3f3f46;
+            color: var(--text);
+            font-size: 0.8rem;
+            z-index: 4;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            user-select: none;
+            line-height: 1.3;
+        }
+
+        .node-option.connected {
+            border-color: var(--success);
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--success);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+        }
+
+        .node-option.wrong {
+            border-color: var(--error);
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            color: var(--error);
+        }
+
+        /* --- CANVAS --- */
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
+        @keyframes shake {
+            10%, 90% { transform: translate(-52%, -50%); }
+            20%, 80% { transform: translate(-48%, -50%); }
+            30%, 50%, 70% { transform: translate(-54%, -50%); }
+            40%, 60% { transform: translate(-46%, -50%); }
+        }
+
+        /* Overlay Messages */
+        .overlay-msg {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            font-size: 3rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 20;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            white-space: nowrap;
+        }
+        .overlay-msg.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .text-success { color: var(--success); text-shadow: 0 0 30px rgba(74, 222, 128, 0.6); }
+        .text-error { color: var(--error); text-shadow: 0 0 30px rgba(244, 63, 94, 0.6); }
+
     </style>
 </head>
-<body class="flex flex-col h-full w-full max-w-md mx-auto bg-[#09090b] shadow-2xl relative">
+<body>
 
-    <!-- DATA SOURCE (Listato A B 2026 Completo) -->
-    <div id="raw-data" style="display:none;">
+    <!-- UI LAYER -->
+    <div class="ui-layer">
+        <div>
+            <div class="header">
+                <div class="brand">SYNAPSE<span>.</span></div>
+                <div class="stats">
+                    <div class="stat-item"><b id="score-display">0</b> PTS</div>
+                    <div class="stat-item" style="color:var(--primary)"><b id="streak-display">0</b> STRK</div>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div id="tutorial-txt" class="tutorial-hint">Collega le affermazioni VERE al nucleo</div>
+            <div id="context-chip" class="context-chip">CARICAMENTO DATI...</div>
+        </div>
+    </div>
+
+    <!-- GAME MESSAGES -->
+    <div id="msg-overlay" class="overlay-msg"></div>
+
+    <!-- GAME CONTAINER -->
+    <div id="game-container">
+        <canvas id="connections-canvas"></canvas>
+    </div>
+
+    <script>
+        /* * =========================================
+         * IMAGE ASSETS MAPPING
+         * =========================================
+         */
+        
+        // Maps IDs found in text e.g. (001) to URLs.
+        // Fallback URLs used for preview. If local files exist, replace URLs with relative paths.
+        const IMAGE_MAP = {
+            "001": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Italian_traffic_signs_-_pericolo_-_strada_deformata.svg/240px-Italian_traffic_signs_-_pericolo_-_strada_deformata.svg.png",
+            "002": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Italian_traffic_signs_-_pericolo_-_dosso.svg/240px-Italian_traffic_signs_-_pericolo_-_dosso.svg.png",
+            "003": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Italian_traffic_signs_-_pericolo_-_cunetta.svg/240px-Italian_traffic_signs_-_pericolo_-_cunetta.svg.png",
+            "004": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Italian_traffic_signs_-_pericolo_-_curva_a_destra.svg/240px-Italian_traffic_signs_-_pericolo_-_curva_a_destra.svg.png",
+            "005": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Italian_traffic_signs_-_pericolo_-_curva_a_sinistra.svg/240px-Italian_traffic_signs_-_pericolo_-_curva_a_sinistra.svg.png",
+            "006": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Italian_traffic_signs_-_pericolo_-_doppia_curva_di_cui_la_prima_a_destra.svg/240px-Italian_traffic_signs_-_pericolo_-_doppia_curva_di_cui_la_prima_a_destra.svg.png",
+            "007": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Italian_traffic_signs_-_pericolo_-_doppia_curva_di_cui_la_prima_a_sinistra.svg/240px-Italian_traffic_signs_-_pericolo_-_doppia_curva_di_cui_la_prima_a_sinistra.svg.png"
+        };
+
+        /* * =========================================
+         * DATA ENGINE
+         * =========================================
+         */
+        
+        const RAW_DATA = `
 Listato A B 2026
 Metodo:  Raggruppamento per radice testuale (Pattern Matching)
 Lezione: 01.1 Definizioni stradali e di traffico
@@ -636,19 +870,19 @@ I bambini, al semaforo, possono attraversare la strada...
 [ F ] ...solo dopo aver ricevuto un gesto di consenso da parte degli automobilisti
 Prima di impegnare un incrocio, dopo che è scattata la luce verde del semaforo...
 [ V ] ...il conducente deve attendere che i pedoni abbiano finito di attraversare la strada
-Alla guida di un veicolo, in vicinanza di una piazzola di fermata di autobus...
-[ V ] ...che trasporta scolari, occorre fare attenzione ai bambini che potrebbero aver iniziato ad attraversare la carreggiata nascosti dall'autobus 
-[ V ] ...per scolari, occorre essere prudenti e tenere conto dei comportamenti imprevedibili dei bambini
-[ V ] ...per scolari, occorre fare attenzione ai bambini, che potrebbero attraversare di corsa la strada per salire sullo scuolabus
-[ V ] ...per scolari, occorre prepararsi a frenare, nel caso in cui dei bambini attraversino improvvisamente la strada
-[ F ] ...per scolari, non è necessario rallentare se lo scuolabus è fermo
-[ F ] ...per scolari, occorre suonare per invitare i bambini che attraversano sulle strisce a dare la precedenza
-[ F ] ...per scolari, non si deve rallentare, per evitare di ostacolare la circolazione degli altri veicoli
-[ F ] ...per scolar,i si deve rallentare solo se vi sono bambini che attraversano
-[ V ] ...per scolari, bisogna rallentare particolarmente se vi è lo scuolabus
-[ F ] ...per scolari, occorre fare attenzione allo scuolabus, che dopo la fermata farà sicuramente retromarcia
-[ F ] ...per scolari, occorre passare per primi, avendo sempre la precedenza sui bambini che attraversano la strada
-[ F ] ...per scolari, non si può proseguire nella marcia se le portiere dello scuolabus sono ancora aperte
+Alla guida di un veicolo, in vicinanza di una piazzola di fermata di autobus che trasporta/per scolari,...
+[ V ] …occorre fare attenzione ai bambini che potrebbero aver iniziato ad attraversare la carreggiata nascosti dall'autobus 
+[ V ] ...occorre essere prudenti e tenere conto dei comportamenti imprevedibili dei bambini
+[ V ] ...occorre fare attenzione ai bambini, che potrebbero attraversare di corsa la strada per salire sullo scuolabus
+[ V ] ...occorre prepararsi a frenare, nel caso in cui dei bambini attraversino improvvisamente la strada
+[ F ] ...non è necessario rallentare se lo scuolabus è fermo
+[ F ] ...occorre suonare per invitare i bambini che attraversano sulle strisce a dare la precedenza
+[ F ] ...non si deve rallentare, per evitare di ostacolare la circolazione degli altri veicoli
+[ F ] ...si deve rallentare solo se vi sono bambini che attraversano
+[ V ] ...bisogna rallentare particolarmente se vi è lo scuolabus
+[ F ] ...occorre fare attenzione allo scuolabus, che dopo la fermata farà sicuramente retromarcia
+[ F ] ...occorre passare per primi, avendo sempre la precedenza sui bambini che attraversano la strada
+[ F ] ...non si può proseguire nella marcia se le portiere dello scuolabus sono ancora aperte
 In vicinanza di una piazzola di fermata di autobus per scolari...
 [ V ] ...può accadere che i bambini scendano dall'autobus senza fare attenzione ai veicoli che sopraggiungono
 Quando una donna in stato di gravidanza attraversa la carreggiata...
@@ -657,9 +891,9 @@ Quando una donna in stato di gravidanza attraversa la carreggiata...
 [ V ] ...non bisogna avvicinarsi troppo con il veicolo, per evitare di spaventarla
 E' consentito posteggiare un veicolo davanti agli scivoli del marciapiede...
 [ F ] ...solo dalle ore 22.00 alle ore 8.00
-Quando un pedone che spinge...
-[ F ] ...la carrozzina per bambini attraversa la carreggiata bisogna dargli la precedenza solo se attraversa da sinistra a destra
-[ F ] ...una carrozzina per bambini attraversa la carreggiata bisogna tenere presente che, di solito, attraversa rapidamente
+Quando un pedone che spinge la/una carrozzina per bambini attraversa la carreggiata...
+[ F ] ...bisogna dargli la precedenza solo se attraversa da sinistra a destra
+[ F ] ...bisogna tenere presente che, di solito, attraversa rapidamente
 Quando si parcheggia un veicolo è vietato ostruire...
 [ V ] ...eventuali scivoli del marciapiede per non impedire il passaggio di pedoni che spingono una carrozzina per bambini
 E' consentito lasciare il veicolo in sosta sul marciapiede...
@@ -686,390 +920,624 @@ Il conducente, in vicinanza di un posteggio riservato ai taxi...
 [ V ] ...deve rallentare ed eventualmente fermarsi se vi sono pedoni che attraversano la strada, senza guardare
 [ F ] ...deve dare la precedenza ai taxi in partenza, qualora s'immettano dal lato sinistro della carreggiata
 [ F ] ...deve dare la precedenza ai taxi che s'immettono sulla strada
-    </div>
+Lezione: 02.1 Segnali di Pericolo
+Argomento: Strada deformata (001)
+Il segnale raffigurato  (001)  è un segnale di...
+[ V ] ...pericolo
+[ F ] ...prescrizione
+Il segnale raffigurato  (001)  preannuncia...
+[ F ] ...più curve consecutive
+[ F ] ...una discesa pericolosa
+[ V ] ...un tratto di strada deformata
+[ V ] ...un tratto di strada con pavimentazione irregolare
+[ V ] ...un tratto di strada dissestata
+[ V ] ...una strada in cattivo stato
+[ F ] ...una serie di dossi
+[ F ] ...una forte variazione di pendenza della strada
+[ F ] ...un tratto di strada a visibilità limitata
+[ F ] ...un dosso
+[ F ] ...una doppia curva
+Il segnale raffigurato  (001) ... 
+[ V ] ...si trova, in genere, 150 metri prima di un tratto di strada con fondo irregolare
+[ V ] ...può essere associato con un segnale di limite massimo di velocità
+[ V ] …se a fondo giallo è usato in presenza di cantieri stradali
+[ F ] ...indica un tratto di strada deformata lungo 320 metri (902)
+[ V ] ...indica un tratto di strada deformata lungo 380 metri (901) 
+In presenza del segnale raffigurato  (001) ...
+[ V ] ...è necessario tenere saldamente il volante, per controllare possibili sbandamenti
+[ V ] ...è importante prevedere eventuali sbandamenti dei veicoli provenienti dal senso opposto
+[ F ] ...è necessario fare attenzione al restringimento della carreggiata
+[ F ] ...è obbligatorio circolare al centro della carreggiata
+[ V ] ...è necessario circolare a velocità moderata se si traina un rimorchio 
+Argomento: Dosso (002)
+Il segnale raffigurato  (002)  è un segnale di...
+[ V ] ...è un segnale di pericolo
+[ F ] ...è un segnale di obbligo
+[ F ] ...è un segnale di precedenza 
+Il segnale raffigurato  (002)  preannuncia...
+[ F ] ...l'ingresso in una galleria
+[ V ] ...un dosso
+[ V ] ...una salita, seguita da una discesa
+[ V ] ...una variazione di pendenza della strada con limitata visibilità
+[ F ] ...un tratto di strada deformata
+[ F ] ...un tratto di strada con pavimentazione irregolare
+[ F ] ...un ponte
+[ F ] ...una cunetta
+[ F ] ...un tratto di strada in cattivo stato
+[ V ] ...un tratto di strada pericoloso per limitata visibilità
+[ F ] ...lavori in corso
+Il segnale raffigurato  (002) ... 
+[ V ] ...è posto, di norma, 150 metri prima di un dosso
+[ F ] ...vieta il transito degli autobus
+[ V ] ...può presegnalare dossi artificiali
+In presenza del segnale raffigurato  (002) ...
+[ V ] ...bisogna considerare che la visibilità è limitata
+[ V ] ...è necessario moderare la velocità in relazione alla visibilità
+[ V ] ...è vietato il sorpasso sul tratto in salita, se la strada è a doppio senso di circolazione con due sole corsie
+[ F ] ...è vietato il sorpasso nel tratto in discesa
+[ V ] ...sono vietate la sosta e la fermata sia sul tratto in salita che su quello in discesa
+[ F ] ...è possibile effettuare l'inversione di marcia nel tratto in discesa
+[ V ] ...è vietata l'inversione di marcia
+Argomento: Cunetta (003)
+Il segnale raffigurato  (003)  preannuncia... 
+[ F ] ...un dosso
+[ V ] ...un tratto di strada pericoloso a causa di una cunetta
+[ V ] ...una cunetta
+[ F ] …un tratto di strada in cattivo stato
+[ F ] ...un tratto di strada con pavimentazione irregolare
+[ V ] ...un tratto di strada che potrebbe allagarsi in caso di forti piogge
+[ F ] ...una banchina cedevole
+[ F ] ...un restringimento della carreggiata
+[ F ] ...una strada deformata
+Il segnale raffigurato  (003) ... 
+[ V ] ...è un segnale di pericolo
+[ V ] ...si trova prima di un tratto in discesa seguito da uno in salita
+[ F ] ...può trovarsi prima di un tratto in salita seguito da una discesa
+[ F ] ...indica una banchina cedevole
+In presenza del segnale raffigurato  (003) ...
+[ V ] ...è necessario moderare la velocità per mantenere il controllo del veicolo
+[ V ] ...è necessario moderare la velocità per evitare danni alle sospensioni
+[ V ] ...è necessario tenere il volante con una presa più sicura
+[ V ] ...e in caso di pioggia è necessario prevedere la possibilità di accumulo di acqua nella cunetta
+[ V ] ...è necessario prevedere la possibilità di accumulo di fango e detriti nella cunetta
+[ F ] ...è necessario rallentare solo se provengono veicoli dal senso opposto
+[ F ] ...è vietato il sorpasso se si circola in una strada a senso unico
+[ F ] ...non è necessario rallentare se la cunetta presenta visibilità
+Argomento: Curva pericolosa a destra (004)
+Il segnale raffigurato  (004)  preannuncia...
+[ F ] ...un cambio di corsia
+[ V ] ...una curva pericolosa a destra
+[ F ] ...una curva a sinistra
+[ V ] ...un tratto di strada pericoloso per ridotta visibilità
+[ F ] ...un obbligo di svolta a destra
+[ V ] ...un tratto di strada pericoloso
+[ F ] ...una serie di curve pericolose di cui la prima a destra
+[ V ] ...un tratto di strada in cui è necessario regolare la velocità in relazione alla visibilità e al raggio della curva
+[ V ] ...un tratto di strada in cui è necessario percorrere la curva con più attenzione se la strada è bagnata
+[ F ] ...un tratto di strada in cui è consentito sorpassare i motocicli, anche superando di poco la striscia bianca continua
+[ F ] ...un tratto di strada in cui è consentito sorpassare i motocicli, anche invadendo la corsia opposta
+[ F ] ...un tratto di strada a due corsie e doppio senso di circolazione in cui è consentito sorpassare i motocicli, senza superare la striscia bianca continua
+[ V ] ...un tratto di strada in cui non è consentito il sorpasso se la carreggiata è a doppio senso di circolazione e con due sole corsie
+[ F ] ...un tratto di strada in salita
+[ F ] ...un tratto di strada in cui è consentita la fermata, ma non la sosta
+[ F ] ...un tratto di strada in cui è consentito effettuare l'inversione di marcia
+[ F ] ...un tratto di strada in cui è consentito effettuare manovre di retromarcia
+Il segnale raffigurato  (004) ... 
+[ V ] ...richiede di moderare la velocità
+[ F ] ...è posto, di norma, a 5 metri dall'inizio della curva
+[ V ] ...è posto, di norma, a 150 metri dal punto di inizio della curva
+[ F ] ...è un segnale di prescrizione
+[ V ] ...può essere integrato con pannello con la scritta TORNANTE
+[ F ] …posto su una strada a doppio senso di circolazione, impone di portarsi sulla parte sinistra della carreggiata per affrontare meglio la curva
+In presenza del segnale raffigurato  (004) ...
+[ F ] ...si deve circolare il più possibile vicino alla striscia bianca che separa i sensi di marcia
+[ V ] ...si deve viaggiare ad andatura particolarmente moderata se si circola con il ruotino (ruota di soccorso) 
+[ V ] ...posto su strada a doppio senso di circolazione e con due sole corsie, si deve circolare il più possibile vicino al margine destro
+Argomento: Curva pericolosa a sinistra (005)
+La figura rappresenta  (005) ...
+[ V ] ...un segnale di pericolo
+[ F ] ...un divieto di svolta a sinistra
+[ F ] ...un segnale di obbligo
+[ F ] ...un segnale di prescrizione
+Il segnale raffigurato  (005)  preannuncia...
+[ V ] ...un tratto di strada che curva a sinistra con limitata visibilità
+[ V ] ...una curva pericolosa a sinistra
+[ V ] ...di norma a 150 metri, una curva pericolosa
+[ V ] ...un tratto di strada pericoloso per ridotta visibilità
+[ V ] ...un tratto di strada non rettilineo, che limita la visibilità
+[ F ] ...un ostacolo da aggirare a sinistra
+Il segnale raffigurato  (005) ...
+[ F ] ...indica una deviazione per cantiere di lavoro
+[ F ] ...indica una circolazione rotatoria
+[ F ] ...impone di circolare il più vicino possibile al centro della strada
+[ F ] ...impone l'obbligo di mantenere la sinistra
+[ V ] ...richiede di moderare la velocità per potersi arrestare in caso di un ostacolo improvviso
+In presenza del segnale raffigurato  (005) ...
+[ V ] ...è necessario regolare la velocità in relazione alla visibilità e al raggio della curva
+[ V ] ...si deve viaggiare ad andatura particolarmente moderata se si circola con il "ruotino" (ruota di soccorso)
+[ V ] ...non è consentito sorpassare altri veicoli su una carreggiata a doppio senso di circolazione con due sole corsie
+[ F ] ...è consentito effettuare l'inversione di marcia
+[ F ] ...è consentita la fermata ma non la sosta
+[ F ] ...è consentito effettuare manovre di retromarcia
+[ V ] ...è necessario percorrere la curva con più attenzione se la strada è bagnata
+[ F ] ...non è consentito il transito ai veicoli con il "ruotino" (ruota di soccorso)
+[ V ] ...su una strada a doppio senso di circolazione con due sole corsie, si deve circolare il più possibile vicino al margine destro
+[ F ] ...su strada a doppio senso di circolazione a due corsie, è consentito sorpassare i motocicli senza invadere la corsia opposta
+[ F ] ...su strada a senso unico di circolazione si deve marciare il più possibile vicino al margine destro della carreggiata
+Argomento: Doppia curva pericolosa la prima a destra (006)
+La figura rappresenta  (006) ...
+[ V ] ...un segnale di pericolo
+Il segnale raffigurato  (006) ... 
+[ V ] ...può essere integrato con il pannello in figura (906)
+[ V ] ...può essere integrato con un pannello indicante TORNANTI
+[ V ] ...richiede di moderare la velocità per potersi arrestare in caso di un ostacolo improvviso
+Il segnale raffigurato  (006)  preannuncia...
+[ V ] ...di norma a 150 metri, una doppia curva pericolosa
+[ F ] ...un raccordo di uscita autostradale
+[ F ] ...una deviazione per lavori in corso
+[ F ] ...un incrocio
+[ F ] ...una discesa pericolosa
+[ F ] ...un tratto di strada con superficie sdrucciolevole
+[ F ] ...un tratto di strada con pavimentazione irregolare
+[ V ] ...un tratto di strada non rettilineo che limita la visibilità
+[ V ] ...una doppia curva pericolosa, la prima a destra
+[ F ] ...un tratto di strada in cui è consentita l'inversione di marcia
+[ F ] ...un tratto di strada in cui è consentita la manovra di retromarcia
+Il segnale con il pannello in figura  (006)  preannuncia...
+[ F ] ...un tratto di strada lungo 3,8 km con una serie di curve pericolose (905) 
+In presenza del segnale raffigurato  (006) ...
+[ V ] ...è necessario regolare la velocità in relazione alla visibilità e al raggio delle curve
+[ V ] ...è necessario percorrere le curve con più attenzione in caso di pioggia
+[ V ] ...è necessario regolare la velocità in relazione alle condizioni di carico del veicolo
+[ F ] ...è necessario tenere una velocità moderata esclusivamente nella prima curva
+[ V ] ...bisogna moderare la velocità
+[ F ] ...è consentito effettuare la fermata in curva
+[ F ] ...è consentito sorpassare motocicli e ciclomotori su strada a due corsie e a doppio senso di circolazione
+[ F ] ...posto su strada a due corsie e a doppio senso di circolazione, è consentito sorpassare nelle ore diurne
+Su strada a due (sole) corsie e a doppio senso di circolazione, in presenza del segnale raffigurato  (006) ...
+[ V ] ...è opportuno fare particolare attenzione ai veicoli provenienti dal senso opposto
+[ V ] ...si deve marciare il più possibile vicino al margine destro
+Nella curve pericolose preannunciate dal segnale raffigurato  (006) ...
+[ V ] ...è vietato il sorpasso se la carreggiata è a due corsie e a doppio senso di circolazione
+Argomento: Doppia curva pericolosa la prima a sinistra (007)
+La figura rappresenta  (007) ...
+[ V ] ...un segnale di pericolo
+Il segnale raffigurato  (007) ...
+[ V ] ...richiede di moderare la velocità
+Il segnale raffigurato preannuncia  (007) ...
+[ F ] ...una deviazione per lavori in corso
+[ F ] ...un tratto di strada con una serie di dossi
+[ F ] ...un tratto di carreggiata sdrucciolevole
+[ F ] ...una strettoia
+[ F ] ...un tratto di strada deformata
+[ V ] ...in genere a 150 m, una doppia curva pericolosa
+[ V ] ...un tratto di strada non rettilineo che limita la visibilità
+[ V ] ...una doppia curva pericolosa, la prima a sinistra
+[ F ] ...una confluenza a sinistra
+[ V ] ...la presenza di tornanti se integrato con apposito pannello
+In presenza del segnale raffigurato  (007) ...
+[ V ] ...è necessario regolare la velocità in relazione alla visibilità e al raggio delle curve
+[ F ] ...è consentita la manovra di retromarcia
+[ V ] ...è necessario percorrere le curve con più attenzione in caso di pioggia
+[ F ] ...è consentita l'inversione di marcia
+[ F ] ...è consentito effettuare la fermata in corrispondenza delle curve
+[ V ] ...è necessario regolare la velocità in relazione alle condizioni di carico del veicolo
+[ V ] ...è opportuno fare particolare attenzione ai veicoli provenienti dal senso opposto
+[ V ] ...non è consentito effettuare manovre di sorpasso su strade a due sole corsie e a doppio senso di circolazione
+[ F ] ...è consentito sorpassare motocicli e ciclomotori su strade a due corsie e a doppio senso
+[ V ] ...si deve circolare il più vicino possibile al margine destro della carreggiata, su strada a due sole corsie e a doppio senso di circolazione
+[ F ] ...è necessario tenere una velocità moderata esclusivamente nella prima curva
+[ F ] ...posto su strade a due corsie e a doppio senso, è consentito sorpassare un veicolo molto lento 
+`;
 
-    <!-- HEADER -->
-    <header class="flex-none h-[var(--header-h)] flex justify-between items-center px-6 bg-[#09090b] z-20 border-b border-white/5">
-        <div>
-            <h1 class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 tracking-tight">
-                Patente Z
-            </h1>
-            <p id="header-subtitle" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Mix Mode</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 rounded-full border border-gray-800">
-                <span class="text-green-500 text-sm">🔥</span>
-                <span id="streak-display" class="font-bold text-sm text-gray-200">0</span>
-            </div>
-        </div>
-    </header>
+        class DataParser {
+            static parse(text) {
+                const lines = text.split('\n');
+                const levels = [];
+                let currentTopic = "Generale";
+                let currentRoot = null;
+                let currentQuestions = [];
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 relative w-full overflow-hidden">
-        
-        <!-- VIEW: GAME -->
-        <div id="view-game" class="absolute inset-0 flex flex-col px-4 pb-2 z-10">
-            
-            <!-- Progress -->
-            <div class="flex-none h-4 flex items-center justify-center mt-2">
-                 <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 w-0 transition-all duration-300"></div>
-                </div>
-            </div>
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line) return;
 
-            <!-- Card Area -->
-            <div class="flex-1 flex flex-col justify-center min-h-0 py-2 relative">
-                <div id="card-container" class="glass-panel w-full h-full rounded-3xl p-6 flex flex-col items-center text-center shadow-xl border-t border-white/10 relative overflow-hidden">
-                    
-                    <!-- Root Phrase -->
-                    <div class="flex-none pt-2 pb-4 w-full border-b border-white/5">
-                        <p id="card-root" class="text-sm md:text-base font-medium text-gray-400 leading-snug select-none">
-                            Caricamento...
-                        </p>
-                    </div>
-
-                    <!-- Completion Phrase -->
-                    <div class="flex-1 flex items-center justify-center w-full py-2 overflow-y-auto no-scrollbar">
-                        <p id="card-completion" class="text-xl md:text-2xl font-bold text-white leading-snug select-none">
-                            --
-                        </p>
-                    </div>
-
-                    <!-- Feedback Overlay -->
-                    <div id="feedback-overlay" class="absolute inset-0 z-50 hidden flex-col items-center justify-center bg-black/85 backdrop-blur-sm transition-opacity duration-200 pointer-events-none">
-                        <div id="feedback-icon" class="text-7xl mb-4 transform transition-transform duration-300 scale-0"></div>
-                        <div id="feedback-text" class="text-2xl font-bold text-white tracking-wide"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls (Fixed Bottom, Big Touch Targets) -->
-            <div class="flex-none h-28 grid grid-cols-2 gap-4 pb-2 pt-2">
-                <!-- Using onclick directly for maximum reliability -->
-                <button onclick="checkAnswer(false)" class="btn-game rounded-2xl bg-[#2c1517] border border-red-900/40 text-red-500 font-bold text-xl flex flex-col items-center justify-center shadow-lg active:bg-red-900/30 select-none">
-                    <i class="ph-bold ph-x text-4xl mb-1 pointer-events-none"></i>
-                    <span class="pointer-events-none">FALSO</span>
-                </button>
-                <button onclick="checkAnswer(true)" class="btn-game rounded-2xl bg-[#132e21] border border-green-900/40 text-green-500 font-bold text-xl flex flex-col items-center justify-center shadow-lg active:bg-green-900/30 select-none">
-                    <i class="ph-bold ph-check text-4xl mb-1 pointer-events-none"></i>
-                    <span class="pointer-events-none">VERO</span>
-                </button>
-            </div>
-            
-            <!-- Lesson Info -->
-            <div id="lesson-info" class="flex-none text-center text-[10px] text-gray-600 font-mono truncate h-4 mb-1"></div>
-        </div>
-
-        <!-- VIEW: SELECTION MENU -->
-        <div id="view-selection" class="absolute inset-0 flex flex-col px-6 bg-[#09090b] transform translate-y-full transition-transform duration-300 z-20">
-            <h2 class="text-xl font-bold text-white mb-2 mt-6 flex-none">Argomenti da ripassare</h2>
-            <div id="selection-list" class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-24 pr-2"></div>
-            <div class="flex-none h-24 w-full pb-6 pt-2 bg-[#09090b]">
-                <button onclick="startStudyMode()" class="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-lg shadow-xl active:scale-95 transition-transform">
-                    AVVIA RIPASSO
-                </button>
-            </div>
-        </div>
-
-        <!-- VIEW: PATTERN WALL -->
-        <div id="view-pattern" class="absolute inset-0 px-6 bg-[#09090b] hidden overflow-y-auto no-scrollbar z-10 pt-4 pb-24">
-            <!-- Content Injected Here -->
-        </div>
-
-    </main>
-
-    <!-- NAVIGATION -->
-    <nav class="flex-none h-[var(--nav-h)] bg-[#09090b] border-t border-white/5 flex items-start justify-around pt-4 z-30 pb-safe">
-        <button onclick="setMode('mix')" id="nav-mix" class="flex flex-col items-center gap-1 text-purple-400 w-20 active:scale-90 transition-transform">
-            <i class="ph-fill ph-shuffle text-2xl"></i>
-            <span class="text-[10px] font-bold">Mix</span>
-        </button>
-        <button onclick="toggleSelectionView()" id="nav-study" class="flex flex-col items-center gap-1 text-gray-500 w-20 active:scale-90 transition-transform">
-            <i class="ph-fill ph-student text-2xl"></i>
-            <span class="text-[10px] font-bold">Studio</span>
-        </button>
-        <button onclick="setMode('pattern')" id="nav-pattern" class="flex flex-col items-center gap-1 text-gray-500 w-20 active:scale-90 transition-transform">
-            <i class="ph-fill ph-wall text-2xl"></i>
-            <span class="text-[10px] font-bold">Muro</span>
-        </button>
-    </nav>
-
-    <script>
-        // --- CORE LOGIC ---
-        const rawText = document.getElementById('raw-data').innerText;
-        let appData = { lessons: [] };
-        let activeQueue = [];
-        let currentIndex = 0;
-        let streak = 0;
-        let isProcessing = false;
-
-        function cleanText(text) {
-            // Rimuove caratteri strani (es: ellissi unicode o bullet points)
-            return text.replace(/…/g, '...').replace(/•/g, '').trim();
-        }
-
-        function parseData() {
-            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            let lesson = null, topic = null, root = null;
-            
-            lines.forEach(line => {
-                if (line.startsWith('Lezione:')) {
-                    lesson = { id: appData.lessons.length, title: cleanText(line.replace('Lezione:', '')), topics: [] };
-                    appData.lessons.push(lesson);
-                    topic = null; root = null;
-                } else if (line.startsWith('Argomento:')) {
-                    if (!lesson) { // Fallback se non c'è lezione definita prima
-                        lesson = { id: appData.lessons.length, title: "Generale", topics: [] };
-                        appData.lessons.push(lesson);
+                    // 1. Detect Topic
+                    if (line.startsWith('Argomento:') || line.startsWith('Lezione:')) {
+                        currentTopic = line.replace('Argomento:', '').replace('Lezione:', '').trim();
+                        return;
                     }
-                    topic = { title: cleanText(line.replace('Argomento:', '')), roots: [] };
-                    lesson.topics.push(topic);
-                    root = null;
-                } else if (line.startsWith('[ V ]') || line.startsWith('[ F ]')) {
-                    if (root) {
+
+                    // 2. Detect Answer
+                    if (line.startsWith('[ V ]') || line.startsWith('[ F ]')) {
+                        if (!currentRoot) return;
                         const isTrue = line.startsWith('[ V ]');
-                        const text = cleanText(line.substring(5));
-                        root.items.push({ text, isTrue });
-                    }
-                } else if (!line.startsWith('Listato') && !line.startsWith('Metodo:')) {
-                    if (topic) {
-                        root = { text: cleanText(line), items: [] };
-                        topic.roots.push(root);
-                    }
-                }
-            });
-            console.log("Parsed:", appData);
-        }
-
-        function initGame(mode, selectedLessonIds = []) {
-            activeQueue = [];
-            currentIndex = 0;
-            streak = 0;
-            updateStreak();
-            
-            // Collect all questions
-            if (mode === 'mix') {
-                appData.lessons.forEach(l => l.topics.forEach(t => t.roots.forEach(r => r.items.forEach(i => 
-                    activeQueue.push({ lesson: l.title, topic: t.title, root: r.text, completion: i.text, isTrue: i.isTrue })
-                ))));
-                activeQueue.sort(() => Math.random() - 0.5); // Shuffle
-                document.getElementById('header-subtitle').innerText = "MIX MODE";
-            } else {
-                const lessons = appData.lessons.filter(l => selectedLessonIds.includes(l.id));
-                lessons.forEach(l => l.topics.forEach(t => t.roots.forEach(r => r.items.forEach(i => 
-                    activeQueue.push({ lesson: l.title, topic: t.title, root: r.text, completion: i.text, isTrue: i.isTrue })
-                ))));
-                document.getElementById('header-subtitle').innerText = "FOCUS MODE";
-            }
-            
-            if(activeQueue.length > 0) {
-                renderCard();
-            } else {
-                alert("Nessuna domanda trovata!");
-            }
-        }
-
-        function renderCard() {
-            if (currentIndex >= activeQueue.length) {
-                document.getElementById('card-completion').innerText = "Sessione Completata!";
-                document.getElementById('card-root').innerText = "Ottimo lavoro 🎉";
-                confetti({ particleCount: 150, spread: 80 });
-                return;
-            }
-            const item = activeQueue[currentIndex];
-            document.getElementById('card-root').innerText = item.root;
-            
-            const compEl = document.getElementById('card-completion');
-            // Reset animation
-            compEl.style.animation = 'none';
-            compEl.offsetHeight; /* trigger reflow */
-            compEl.style.animation = null; 
-            
-            compEl.innerText = item.completion;
-            compEl.classList.add('anim-enter');
-            
-            document.getElementById('lesson-info').innerText = `${item.topic}`;
-            document.getElementById('progress-bar').style.width = `${((currentIndex) / activeQueue.length) * 100}%`;
-        }
-
-        function checkAnswer(userChoice) {
-            if (isProcessing || currentIndex >= activeQueue.length) return;
-            isProcessing = true;
-
-            const item = activeQueue[currentIndex];
-            const isCorrect = userChoice === item.isTrue;
-            const overlay = document.getElementById('feedback-overlay');
-            const icon = document.getElementById('feedback-icon');
-            const text = document.getElementById('feedback-text');
-            const container = document.getElementById('card-container');
-
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-
-            if (isCorrect) {
-                streak++;
-                confetti({ particleCount: 20, spread: 40, origin: { y: 0.7 }, startVelocity: 20 });
-                
-                // Success styling
-                overlay.className = "absolute inset-0 z-50 flex flex-col items-center justify-center bg-green-900/90 backdrop-blur-sm transition-opacity duration-200 pointer-events-none rounded-3xl";
-                icon.innerHTML = '<i class="ph-fill ph-check-circle text-green-300"></i>';
-                text.innerText = "ESATTO!";
-                text.className = "text-2xl font-bold text-green-300 tracking-wider";
-            } else {
-                streak = 0;
-                container.classList.add('anim-shake');
-                
-                // Error styling
-                overlay.className = "absolute inset-0 z-50 flex flex-col items-center justify-center bg-red-900/90 backdrop-blur-sm transition-opacity duration-200 pointer-events-none rounded-3xl";
-                icon.innerHTML = '<i class="ph-fill ph-x-circle text-red-300"></i>';
-                text.innerText = item.isTrue ? "ERA VERO" : "ERA FALSO";
-                text.className = "text-2xl font-bold text-red-300 tracking-wider";
-                
-                setTimeout(() => container.classList.remove('anim-shake'), 400);
-            }
-            
-            updateStreak();
-            
-            // Icon pop animation
-            requestAnimationFrame(() => { 
-                icon.classList.remove('scale-0'); 
-                icon.classList.add('scale-100'); 
-            });
-
-            // Delay for next card
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-                icon.classList.add('scale-0');
-                icon.classList.remove('scale-100');
-                
-                currentIndex++;
-                renderCard();
-                isProcessing = false;
-            }, 900);
-        }
-
-        function updateStreak() { document.getElementById('streak-display').innerText = streak; }
-
-        function setMode(mode) {
-            // Close selection panel
-            document.getElementById('view-selection').style.transform = "translateY(100%)";
-            
-            // Switch main views
-            if (mode === 'pattern') {
-                document.getElementById('view-game').classList.add('hidden');
-                document.getElementById('view-pattern').classList.remove('hidden');
-                renderPattern();
-            } else {
-                document.getElementById('view-pattern').classList.add('hidden');
-                document.getElementById('view-game').classList.remove('hidden');
-            }
-            
-            // Nav Highlighting
-            const resetNav = () => document.querySelectorAll('nav button').forEach(b => {
-                b.classList.remove('text-purple-400');
-                b.classList.add('text-gray-500');
-            });
-            
-            resetNav();
-            
-            if (mode === 'mix') {
-                document.getElementById('nav-mix').classList.add('text-purple-400');
-                document.getElementById('nav-mix').classList.remove('text-gray-500');
-                initGame('mix');
-            } else if (mode === 'pattern') {
-                document.getElementById('nav-pattern').classList.add('text-purple-400');
-                document.getElementById('nav-pattern').classList.remove('text-gray-500');
-            }
-        }
-
-        function toggleSelectionView() {
-            const el = document.getElementById('view-selection');
-            const isOpen = el.style.transform === "translateY(0%)";
-            
-            if (!isOpen) {
-                renderSelectionList();
-                el.style.transform = "translateY(0%)";
-                
-                // Highlight Nav
-                document.querySelectorAll('nav button').forEach(b => {
-                    b.classList.remove('text-purple-400');
-                    b.classList.add('text-gray-500');
-                });
-                document.getElementById('nav-study').classList.add('text-purple-400');
-                document.getElementById('nav-study').classList.remove('text-gray-500');
-            } else {
-                el.style.transform = "translateY(100%)";
-                // Revert nav highlight to current mode (simplified: default to mix)
-                setMode('mix'); 
-            }
-        }
-
-        function renderSelectionList() {
-            const container = document.getElementById('selection-list');
-            container.innerHTML = '';
-            appData.lessons.forEach(l => {
-                container.innerHTML += `
-                    <label class="custom-checkbox flex items-center p-4 rounded-xl bg-[#18181b] border border-white/5 cursor-pointer active:scale-[0.98] transition-transform shadow-sm">
-                        <input type="checkbox" value="${l.id}" class="hidden" checked>
-                        <div class="w-6 h-6 rounded-md border-2 border-gray-600 flex items-center justify-center mr-4 transition-colors">
-                            <i class="ph-bold ph-check text-white text-xs"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-bold text-sm text-gray-200 leading-tight">${l.title}</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider">${l.topics.length} Argomenti</p>
-                        </div>
-                    </label>`;
-            });
-        }
-
-        function startStudyMode() {
-            const selectedIds = Array.from(document.querySelectorAll('#selection-list input:checked')).map(cb => parseInt(cb.value));
-            if (selectedIds.length === 0) return alert("Seleziona almeno un argomento!");
-            
-            document.getElementById('view-selection').style.transform = "translateY(100%)";
-            document.getElementById('view-pattern').classList.add('hidden');
-            document.getElementById('view-game').classList.remove('hidden');
-            
-            initGame('study', selectedIds);
-        }
-
-        function renderPattern() {
-            const container = document.getElementById('view-pattern');
-            // Optimization: Don't re-render if populated
-            if(container.innerHTML.trim().length > 50) return;
-
-            let html = '';
-            appData.lessons.forEach(l => {
-                l.topics.forEach(t => {
-                    html += `<div class="mb-6">
-                        <h3 class="text-xs font-bold text-purple-400 uppercase mb-2 pl-2 border-l-2 border-purple-500">${t.title}</h3>`;
-                    
-                    t.roots.forEach(r => {
-                        html += `<div class="bg-[#18181b] rounded-xl p-4 mb-3 border border-white/5 shadow-sm">
-                            <p class="text-sm text-gray-400 mb-3 border-b border-white/5 pb-2">${r.text}</p>
-                            <div class="space-y-2">`;
+                        // Clean the text (remove [ V ] and leading ...)
+                        let txt = line.substring(5).trim();
+                        if (txt.startsWith('...')) txt = txt.substring(3).trim();
                         
-                        r.items.forEach(i => {
-                             html += `
-                                <div class="flex gap-3 items-start">
-                                    <i class="ph-fill ${i.isTrue ? 'ph-check-circle text-green-500' : 'ph-x-circle text-red-500'} mt-0.5 text-lg shrink-0"></i>
-                                    <span class="text-sm text-gray-200 leading-snug">${i.text}</span>
-                                </div>`;
+                        currentQuestions.push({
+                            text: txt,
+                            isTrue: isTrue,
+                            id: Math.random().toString(36).substr(2, 9)
                         });
-                        html += `</div></div>`;
-                    });
-                    html += `</div>`;
+                    } else if (line.endsWith('...') || line.endsWith(':')) {
+                        // 3. Detect Root (Question)
+                        // If we have a previous grouping, save it
+                        if (currentRoot && currentQuestions.length > 0) {
+                            levels.push(this.packageLevel(currentTopic, currentRoot, currentQuestions));
+                        }
+                        // Start new grouping
+                        currentRoot = line;
+                        currentQuestions = [];
+                    }
                 });
-            });
-            container.innerHTML = html;
+
+                // Push last set
+                if (currentRoot && currentQuestions.length > 0) {
+                    levels.push(this.packageLevel(currentTopic, currentRoot, currentQuestions));
+                }
+                
+                return levels;
+            }
+
+            static packageLevel(topic, rootText, answers) {
+                // Check for image code e.g., (001) in rootText
+                let imageId = null;
+                const match = rootText.match(/\((\d{3})\)/);
+                if (match) {
+                    imageId = match[1];
+                    // Clean text (optional: keep code or remove it)
+                    // rootText = rootText.replace(/\(\d{3}\)/, '').trim(); 
+                }
+
+                return {
+                    topic: topic,
+                    root: rootText,
+                    imageId: imageId,
+                    answers: [...answers]
+                };
+            }
         }
 
-        // --- INIT ---
+        /* * =========================================
+         * GAME ENGINE
+         * =========================================
+         */
+
+        class Game {
+            constructor() {
+                this.container = document.getElementById('game-container');
+                this.canvas = document.getElementById('connections-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // UI Elements
+                this.scoreEl = document.getElementById('score-display');
+                this.streakEl = document.getElementById('streak-display');
+                this.barEl = document.getElementById('progress-bar');
+                this.contextEl = document.getElementById('context-chip');
+                this.msgOverlay = document.getElementById('msg-overlay');
+
+                // State
+                this.levels = DataParser.parse(RAW_DATA);
+                this.currentLevelIndex = 0;
+                this.score = 0;
+                this.streak = 0;
+                this.currentNodes = [];
+                this.coreNode = null;
+                this.activeLine = null; // { x, y } of pointer
+                this.connections = []; // { from, to, type }
+                this.completedTrueCount = 0;
+                this.totalTrueCount = 0;
+
+                // Physics/Animation
+                this.animId = null;
+                this.center = { x: window.innerWidth/2, y: window.innerHeight/2 };
+
+                this.initListeners();
+                this.startLevel();
+                this.resize();
+                this.loop();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.center = { x: window.innerWidth/2, y: window.innerHeight/2 };
+                if (this.coreNode) {
+                    this.coreNode.x = this.center.x;
+                    this.coreNode.y = this.center.y;
+                    this.updateDOMPos(this.coreNode);
+                }
+            }
+
+            initListeners() {
+                window.addEventListener('resize', () => this.resize());
+                
+                // Mouse/Touch for drawing line
+                const handleMove = (e) => {
+                    const x = e.clientX || e.touches[0].clientX;
+                    const y = e.clientY || e.touches[0].clientY;
+                    this.activeLine = { x, y };
+                };
+                
+                const handleEnd = () => {
+                    this.activeLine = null;
+                };
+
+                this.container.addEventListener('mousemove', handleMove);
+                this.container.addEventListener('touchmove', handleMove);
+                window.addEventListener('mouseup', handleEnd);
+                window.addEventListener('touchend', handleEnd);
+            }
+
+            startLevel() {
+                // Cleanup
+                this.container.querySelectorAll('.node').forEach(el => el.remove());
+                this.connections = [];
+                this.currentNodes = [];
+
+                // Pick Level (Random or Sequential)
+                const levelData = this.levels[Math.floor(Math.random() * this.levels.length)];
+                
+                // Setup Core
+                this.coreNode = this.createNode(levelData.root, true, levelData);
+                this.coreNode.x = this.center.x;
+                this.coreNode.y = this.center.y;
+                
+                this.contextEl.textContent = levelData.topic.toUpperCase();
+
+                // Setup Options (Max 6 to avoid clutter)
+                // Ensure mixed true/false
+                let options = levelData.answers.sort(() => 0.5 - Math.random()).slice(0, 6);
+                
+                this.totalTrueCount = options.filter(o => o.isTrue).length;
+                this.completedTrueCount = 0;
+                
+                // If no true answers in slice, force one
+                if (this.totalTrueCount === 0 && levelData.answers.some(a=>a.isTrue)) {
+                   options[0] = levelData.answers.find(a=>a.isTrue);
+                   this.totalTrueCount = 1;
+                }
+
+                // Spawn positions (Orbit)
+                const radius = Math.min(window.innerWidth, window.innerHeight) * 0.35;
+                const angleStep = (2 * Math.PI) / options.length;
+
+                options.forEach((opt, index) => {
+                    const angle = index * angleStep - Math.PI/2; // Start top
+                    const node = this.createNode(opt.text, false, opt);
+                    
+                    // Initial Position
+                    node.x = this.center.x + Math.cos(angle) * radius;
+                    node.y = this.center.y + Math.sin(angle) * radius;
+                    
+                    // Animation props
+                    node.baseAngle = angle;
+                    node.radius = radius;
+                    node.floatOffset = Math.random() * 100;
+                    
+                    this.currentNodes.push(node);
+                });
+
+                this.updateProgressBar();
+            }
+
+            createNode(text, isCore, data = null) {
+                const el = document.createElement('div');
+                el.className = isCore ? 'node node-core' : 'node node-option';
+                
+                if (isCore && data.imageId && IMAGE_MAP[data.imageId]) {
+                    const img = document.createElement('img');
+                    img.src = IMAGE_MAP[data.imageId];
+                    // Also try local path fallback logic by simply setting src 
+                    // (in a real app we'd need checks, here we just use what we have in map)
+                    
+                    // Clean text (remove the code for display)
+                    const displayText = text.replace(/\(\d{3}\)/, '').trim();
+                    
+                    el.appendChild(img);
+                    const span = document.createElement('span');
+                    span.textContent = displayText;
+                    el.appendChild(span);
+                } else {
+                    el.textContent = text;
+                }
+                
+                const nodeObj = {
+                    el, 
+                    x: 0, 
+                    y: 0, 
+                    isCore,
+                    data, 
+                    connected: false
+                };
+
+                if (isCore) {
+                    // Interaction: Start drag
+                    const startDrag = (e) => {
+                        e.preventDefault();
+                        const x = e.clientX || e.touches[0].clientX;
+                        const y = e.clientY || e.touches[0].clientY;
+                        this.activeLine = { x, y };
+                    };
+                    el.addEventListener('mousedown', startDrag);
+                    el.addEventListener('touchstart', startDrag);
+                } else {
+                    // Interaction: Receive drop
+                    const handleHit = () => this.checkConnection(nodeObj);
+                    el.addEventListener('mouseup', handleHit);
+                    el.addEventListener('touchend', (e) => {
+                        // For touch, we need to check if the touch ended ON this element
+                        const touch = e.changedTouches[0];
+                        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (target === el || el.contains(target)) handleHit();
+                    });
+                }
+
+                this.container.appendChild(el);
+                this.updateDOMPos(nodeObj);
+                return nodeObj;
+            }
+
+            checkConnection(targetNode) {
+                if (!this.activeLine) return; // Must be dragging from core
+                if (targetNode.connected) return; // Already done
+
+                if (targetNode.data.isTrue) {
+                    // SUCCESS
+                    this.handleSuccess(targetNode);
+                } else {
+                    // FAILURE
+                    this.handleFailure(targetNode);
+                }
+                
+                this.activeLine = null; // Stop drawing line
+            }
+
+            handleSuccess(node) {
+                node.connected = true;
+                node.el.classList.add('connected');
+                
+                // Add permanent connection visual
+                this.connections.push({ node: node });
+
+                this.score += 10 + (this.streak * 2);
+                this.streak++;
+                this.completedTrueCount++;
+                
+                // FX
+                if (navigator.vibrate) navigator.vibrate(50);
+                
+                // Check Level Complete
+                if (this.completedTrueCount >= this.totalTrueCount) {
+                    setTimeout(() => this.levelComplete(), 800);
+                }
+                
+                this.updateUI();
+            }
+
+            handleFailure(node) {
+                node.el.classList.add('wrong');
+                this.streak = 0;
+                this.score = Math.max(0, this.score - 5);
+                
+                this.showOverlay("NOPE", "error");
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                setTimeout(() => {
+                    node.el.classList.remove('wrong');
+                }, 500);
+
+                this.updateUI();
+            }
+
+            levelComplete() {
+                this.showOverlay("COMPLETO", "success");
+                setTimeout(() => {
+                    this.startLevel();
+                    this.msgOverlay.className = "overlay-msg"; // Hide
+                }, 1500);
+            }
+
+            showOverlay(text, type) {
+                this.msgOverlay.textContent = text;
+                this.msgOverlay.className = `overlay-msg show text-${type}`;
+                setTimeout(() => {
+                    if (type === 'error') this.msgOverlay.className = "overlay-msg";
+                }, 1000);
+            }
+
+            updateUI() {
+                this.scoreEl.innerText = this.score;
+                this.streakEl.innerText = this.streak;
+                this.updateProgressBar();
+            }
+
+            updateProgressBar() {
+                const pct = (this.completedTrueCount / this.totalTrueCount) * 100;
+                this.barEl.style.width = `${pct}%`;
+            }
+
+            updateDOMPos(node) {
+                node.el.style.transform = `translate(-50%, -50%) translate(${node.x}px, ${node.y}px)`;
+                node.el.style.left = `${node.x}px`;
+                node.el.style.top = `${node.y}px`;
+                node.el.style.transform = `translate(-50%, -50%)`;
+            }
+
+            loop() {
+                const now = Date.now();
+                
+                // Clear Canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Animate Floating Options
+                this.currentNodes.forEach(node => {
+                    if (!node.connected) {
+                        // Gentle float
+                        const t = now * 0.001;
+                        const floatX = Math.sin(t + node.floatOffset) * 10;
+                        const floatY = Math.cos(t * 0.8 + node.floatOffset) * 10;
+                        
+                        // Update position based on orbit + float
+                        node.x = this.center.x + Math.cos(node.baseAngle) * node.radius + floatX;
+                        node.y = this.center.y + Math.sin(node.baseAngle) * node.radius + floatY;
+                        this.updateDOMPos(node);
+                    } else {
+                        // Pull closer if connected (implosion effect)
+                        const targetR = node.radius * 0.6; // Get closer to core
+                        const dx = (this.center.x + Math.cos(node.baseAngle) * targetR) - node.x;
+                        const dy = (this.center.y + Math.sin(node.baseAngle) * targetR) - node.y;
+                        node.x += dx * 0.1;
+                        node.y += dy * 0.1;
+                        this.updateDOMPos(node);
+                    }
+                });
+
+                // Draw Connections
+                // 1. Permanent (Success) connections
+                this.ctx.lineWidth = 3;
+                this.connections.forEach(conn => {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.center.x, this.center.y);
+                    this.ctx.lineTo(conn.node.x, conn.node.y);
+                    this.ctx.strokeStyle = '#4ade80'; // Success Green
+                    this.ctx.stroke();
+                    
+                    // Little particle flow
+                    const t = (now % 1000) / 1000;
+                    const px = this.center.x + (conn.node.x - this.center.x) * t;
+                    const py = this.center.y + (conn.node.y - this.center.y) * t;
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, 4, 0, Math.PI*2);
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.fill();
+                });
+
+                // 2. Active Drag Line
+                if (this.activeLine) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.center.x, this.center.y);
+                    this.ctx.lineTo(this.activeLine.x, this.activeLine.y);
+                    this.ctx.strokeStyle = '#22d3ee'; // Cyan
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.shadowColor = '#22d3ee';
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                }
+
+                requestAnimationFrame(() => this.loop());
+            }
+        }
+
+        // Init
         window.onload = () => {
-            parseData();
-            initGame('mix');
+            const game = new Game();
         };
+
     </script>
 </body>
 </html>
